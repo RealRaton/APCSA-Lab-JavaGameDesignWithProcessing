@@ -1,9 +1,36 @@
 {
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\Program Files\\processing\\core\\library\\core.jar",
-        "c:\\Program Files\\processing\\modes\\java\\libraries\\sound\\library\\sound.jar",
-        "c:\\Program Files\\processing\\core\\library\\gluegen-rt.jar",
-        "c:\\Program Files\\processing\\core\\library\\jogl-all.jar"
-    ]
+    "java.project.referencedLibraries": {
+        "include": [
+            "lib/**/*.jar",
+            "c:\\Program Files\\processing\\core\\library\\core.jar",
+            "c:\\Program Files\\processing\\modes\\java\\libraries\\sound\\library\\sound.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\annotations-13.0.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\antlr-2.7.7.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\core-4.4.1.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-2.5.0.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-2.5.0-natives-android-aarch64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-2.5.0-natives-linux-aarch64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-2.5.0-natives-linux-amd64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-2.5.0-natives-linux-armv6hf.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-2.5.0-natives-macosx-universal.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-2.5.0-natives-windows-amd64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\gluegen-rt-main-2.5.0.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-2.5.0.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-2.5.0-natives-android-aarch64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-2.5.0-natives-linux-aarch64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-2.5.0-natives-linux-amd64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-2.5.0-natives-linux-armv6hf.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-2.5.0-natives-macosx-universal.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-2.5.0-natives-windows-amd64.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\jogl-all-main-2.5.0.jar",
+            "c:\\Program Files\\Processing\\app\\resources\\core\\library\\kotlin-stdlib-2.0.20.jar"
+        ],
+        "exclude": [
+            "c:\\Program Files\\Processing\\runtime\\lib\\jrt-fs.jar",
+            "c:\\Program Files\\Processing\\app\\animation-core-desktop-1.7.1-87bb47dcf611207d17ac1fabc2155e1.jar",
+            "c:\\Program Files\\Processing\\app\\animation-desktop-1.7.1-405fd87261449d20aacb4543f98b26b.jar",
+            "c:\\Program Files\\Processing\\app\\annotation-jvm-1.8.0-3c74b73c0c75521f67964f11b28dec9.jar"
+        ]
+    },
+    "java.dependency.packagePresentation": "hierarchical"
 }
