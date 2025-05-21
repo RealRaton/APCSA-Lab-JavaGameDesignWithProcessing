@@ -1,8 +1,9 @@
 /* Screen class - a high level class that handles background screens & millisecond timing
  * Has a World Subclass
  * Author: Joel Bianchi & Carey Jiang
- * Last Edit: 5/13/25
- * Comment Revisions
+ * Last Edit: 5/20/25
+ * renamed showBg() method to be used first in draw()
+ * added show() to be overridden by World/Grid/HexGrid
  */
 
 
@@ -52,6 +53,7 @@ public class Screen{
         this.isMoveable = true;
         this.setName(screenName);
         mbg = new Sprite(p, movingBg, scale, x, y);
+        System.out.println("Screen constructed with " + mbg.getImagePath() + "\t" + mbg);
         startTime = getTotalTime();
     }
 
@@ -123,12 +125,18 @@ public class Screen{
     }
 
     // Updates any movement of the background to be shown
-    public void show(){
+    public void showBg(){
         if(isMoveable){
             mbg.show();
         } else if(bg != null){
             p.background(bg);
         }
+    }
+
+    // Updates all sprites and images on the screen
+    // Does nothing unless Overridden by World, Grid, and HexGrid
+    public void show(){
+
     }
 
     // Returns distance to right edge for a moveable background -CAREY JIANG 2024
@@ -139,6 +147,10 @@ public class Screen{
 
     //------------------ SCREEN TIME METHODS --------------------//
 
+    // //
+    // public static long getGameTime(){
+    //     return p.millis();
+    // }
     // Returns the total number of milliseconds the game has been running
     public long getTotalTime(){
         return p.millis();
