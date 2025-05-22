@@ -69,6 +69,9 @@ public class Game extends PApplet{
   World currentWorld;
   Grid currentGrid;
   private int msElapsed = 0;
+  long gravityTimer = 0;               // tracks last gravity update
+  int gravityInterval = 400;          // milliseconds between falls (lower = faster)
+
 
   boolean start = true;
 
@@ -158,18 +161,24 @@ public class Game extends PApplet{
     updateTitleBar();
     updateScreen();
     // Gravity for Level 1
+// Gravity for Level 1 (time-based)
 if (currentScreen == level1Grid) {
     int maxRow = level1Grid.getNumRows() - 1;
     GridLocation belowLoc = new GridLocation(player2Row + 1, player2Col);
 
+    // Only fall if player is above bottom row and the tile below is empty
     if (player2Row < maxRow && !level1Grid.hasTileSprite(belowLoc)) {
-        // Simulate falling
-        GridLocation oldLoc = new GridLocation(player2Row, player2Col);
-        player2Row++;
-        level1Grid.clearTileSprite(oldLoc);
-        level1Grid.setTileSprite(belowLoc, player2);
+        long currentTime = p.millis();
+        if (currentTime - gravityTimer >= gravityInterval) {
+            GridLocation oldLoc = new GridLocation(player2Row, player2Col);
+            player2Row++;
+            level1Grid.clearTileSprite(oldLoc);
+            level1Grid.setTileSprite(belowLoc, player2);
+            gravityTimer = currentTime;
+        }
     }
 }
+
 
     
     // Apply gravity to player3 if in level2World
