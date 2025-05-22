@@ -32,7 +32,7 @@ public class Game extends PApplet{
 
   // VARIABLES: Level1Grid Screen
   Grid level1Grid;
-  String level1BgFile = "images/chess.jpg";
+  String level1BgFile = "images/grasslands.png";
   PImage level1Bg;
   String player1File = "images/x_wood.png";
   PImage player1;   // Use PImage to display the image in a GridLocation
@@ -50,6 +50,11 @@ public class Game extends PApplet{
   PImage level2Bg;
   String player3File = "images/zapdos.png";
   Sprite player3; //Use Sprite for a pixel-based Location
+  float velocityY = 0;
+  float gravity = 0.8f;
+  float jumpStrength = -15.0f;
+  boolean onGround = false;
+  float groundY = 500;
   int player3startX = 50;
   int player3startY = 300;
 
@@ -101,7 +106,7 @@ public class Game extends PApplet{
 
     //SETUP: Screens, Worlds, Grids
     splashScreen = new Screen(this, "splash", splashBg);
-    level1Grid = new Grid(this, "chessBoard", level1Bg, 6, 8);
+    level1Grid = new Grid(this, "grasslands", level1Bg, 6, 8);
     //level1Grid.startPrintingGridMarks();
     level2World = new World(p, "sky", level2Bg, 4.0f, 0.0f, -800.0f); //moveable World constructor --> defines center & scale (x, scale, y)???
     System.out.println( "World constructed: " + Util.toStringPImage(level2World.getBgImage()));
@@ -152,6 +157,36 @@ public class Game extends PApplet{
 
     updateTitleBar();
     updateScreen();
+    // Gravity for Level 1
+if (currentScreen == level1Grid) {
+    int maxRow = level1Grid.getNumRows() - 1;
+    GridLocation belowLoc = new GridLocation(player2Row + 1, player2Col);
+
+    if (player2Row < maxRow && !level1Grid.hasTileSprite(belowLoc)) {
+        // Simulate falling
+        GridLocation oldLoc = new GridLocation(player2Row, player2Col);
+        player2Row++;
+        level1Grid.clearTileSprite(oldLoc);
+        level1Grid.setTileSprite(belowLoc, player2);
+    }
+}
+
+    
+    // Apply gravity to player3 if in level2World
+if(currentScreen == level2World) {
+    velocityY += gravity;
+    player3.move(0, velocityY);
+
+    // Check if landed
+    if(player3.getBottom() >= groundY) {
+        player3.setBottom(groundY);
+        velocityY = 0;
+        onGround = true;
+    } else {
+        onGround = false;
+    }
+}
+
 
     //simple timing handling
     if (msElapsed % 300 == 0) {
@@ -182,7 +217,8 @@ public class Game extends PApplet{
     
     //KEYS FOR LEVEL1
     if(currentScreen == level1Grid){
-
+      
+/* 
       //set [W] key to move the player1 up & avoid Out-of-Bounds errors
       if(p.keyCode == 87){
       
@@ -195,6 +231,38 @@ public class Game extends PApplet{
         //change the field for player2Row
         player2Row--;
       }
+*/
+
+      if(currentScreen == level1Grid){
+
+    GridLocation oldLoc = new GridLocation(player2Row, player2Col);
+
+    // Move Up
+    if(p.key == 'w' || p.keyCode == UP) {
+        if(player2Row > 0) player2Row--;
+    }
+
+    // Move Down
+    if(p.key == 's' || p.keyCode == DOWN) {
+        if(player2Row < level1Grid.getNumRows() - 1) player2Row++;
+    }
+
+    // Move Left
+    if(p.key == 'a' || p.keyCode == LEFT) {
+        if(player2Col > 0) player2Col--;
+    }
+
+    // Move Right
+    if(p.key == 'd' || p.keyCode == RIGHT) {
+        if(player2Col < level1Grid.getNumCols() - 1) player2Col++;
+    }
+
+    // Update Sprite Position
+    GridLocation newLoc = new GridLocation(player2Row, player2Col);
+    level1Grid.clearTileSprite(oldLoc);
+    level1Grid.setTileSprite(newLoc, player2);
+}
+
 
       // if the 'n' key is pressed, ask for their name
       if(p.key == 'n'){
