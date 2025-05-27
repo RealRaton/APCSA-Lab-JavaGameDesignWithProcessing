@@ -75,6 +75,8 @@ public class Game extends PApplet{
 
   boolean start = true;
 
+  PImage enemyImg;  // enemy image for level 1
+
 
   //------------------ REQUIRED PROCESSING METHODS --------------------//
 
@@ -151,6 +153,10 @@ public class Game extends PApplet{
     
     System.out.println("Game started...");
 
+    enemyImg = p.loadImage("images/enemy.png");
+    enemyImg.resize(level1Grid.getTileWidth(), level1Grid.getTileHeight());
+
+
   } //end setup()
 
 
@@ -179,6 +185,50 @@ if (currentScreen == level1Grid) {
     }
 }
 
+public void populateSprites() {
+  if (currentScreen == level1Grid) {
+    int lastCol = level1Grid.getNumCols() - 1;
+
+    for (int row = 0; row < level1Grid.getNumRows(); row++) {
+      GridLocation loc = new GridLocation(row, lastCol);
+
+      if (Math.random() < 0.10 && !level1Grid.hasTileImage(loc)) {
+        level1Grid.setTileImage(loc, enemyImg);
+      }
+    }
+  }
+}
+
+public void moveSprites() {
+  if (currentScreen == level1Grid) {
+    for (int row = 0; row < level1Grid.getNumRows(); row++) {
+      for (int col = 0; col < level1Grid.getNumCols(); col++) {
+        GridLocation loc = new GridLocation(row, col);
+        if (level1Grid.hasTileImage(loc)) {
+          // Skip player tile
+          if (loc.getRow() == player1Row && loc.getCol() == player1Col) continue;
+
+          int newCol = col - 1;
+          if (newCol >= 0) {
+            GridLocation newLoc = new GridLocation(row, newCol);
+
+            if (loc.getRow() == player1Row && newCol == player1Col) {
+              System.out.println("Enemy collided with player!");
+              level1Grid.clearTileImage(loc);
+              health--; // optional: track player health
+            } else if (!level1Grid.hasTileImage(newLoc)) {
+              level1Grid.setTileImage(newLoc, level1Grid.getTileImage(loc));
+              level1Grid.clearTileImage(loc);
+            }
+          } else {
+            // enemy left the screen
+            level1Grid.clearTileImage(loc);
+          }
+        }
+      }
+    }
+  }
+}
 
     
     // Apply gravity to player3 if in level2World
@@ -210,6 +260,11 @@ if(currentScreen == level2World) {
     if(isGameOver()){
       endGame();
     }
+
+    if (msElapsed % 300 == 0) {
+  populateSprites();
+  moveSprites();
+  }
 
   } //end draw()
 
