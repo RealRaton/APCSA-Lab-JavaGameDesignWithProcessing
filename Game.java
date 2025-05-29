@@ -1,10 +1,7 @@
 /* Game Class Starter File
  * Authors: Sayeedus Salihin, Joel A. Bianchi
- * Last Edit: 5/20/25
- * using new Screen show() method
- * Eliminate usage of currentWorld & currentGrid
- * Use of CycleTimer for draw loop
- * Added Platform example in level3World
+ * Last Edit: 5/22/25
+ * using new Screen show method
  */
 
 //import processing.sound.*;
@@ -36,7 +33,7 @@ public class Game extends PApplet{
 
   // VARIABLES: Level1Grid Screen
   Grid level1Grid;
-  String level1BgFile = "images/chess.jpg";
+  String level1BgFile = "images/grasslands.png";
   PImage level1Bg;
   String player1File = "images/x_wood.png";
   PImage player1;   // Use PImage to display the image in a GridLocation
@@ -53,10 +50,15 @@ public class Game extends PApplet{
   World level2World;
   String level2BgFile = "images/sky.png";
   PImage level2Bg;
-  String player20File = "images/zapdos.png";
-  Sprite player20; //Use Sprite for a pixel-based Location
-  int player20startX = 50;
-  int player20startY = 300;
+  String player3File = "images/zapdos.png";
+  Sprite player3; //Use Sprite for a pixel-based Location
+  float velocityY = 0;
+  float gravity = 0.8f;
+  float jumpStrength = -15.0f;
+  boolean onGround = false;
+  float groundY = 500;
+  int player3startX = 50;
+  int player3startY = 300;
 
   //VARIABLES: Level3World Pixel-based Platformer
   World level3World;
@@ -74,8 +76,13 @@ public class Game extends PApplet{
   // VARIABLES: Tracking the current Screen being displayed
   Screen currentScreen;
   CycleTimer slowCycleTimer;
+  long gravityTimer = 0;               // tracks last gravity update
+  int gravityInterval = 400;          // milliseconds between falls (lower = faster)
+
 
   boolean start = true;
+
+  PImage enemyImg;  // enemy image for level 1
 
 
   //------------------ REQUIRED PROCESSING METHODS --------------------//
@@ -110,11 +117,10 @@ public class Game extends PApplet{
     endBg.resize(p.width, p.height);
 
     //SETUP: Screens, Worlds, Grids
-    splashScreen = new Screen(p, "splash", splashBg);
-    level1Grid = new Grid(p, "chessBoard", level1Bg, 6, 8);
-    // level1Grid.startPrintingGridMarks();
+    splashScreen = new Screen(this, "splash", splashBg);
+    level1Grid = new Grid(this, "grasslands", level1Bg, 6, 8);
+    //level1Grid.startPrintingGridMarks();
     level2World = new World(p, "sky", level2BgFile, 4.0f, 0.0f, -800.0f); //moveable World constructor --> defines center & scale (x, scale, y)???
-    
     System.out.println( "World constructed: " + Util.toStringPImage(level2World.getBgImage()));
        
     // level2World = new World("sky", level2Bg);   //non-moving World construtor
@@ -141,8 +147,8 @@ public class Game extends PApplet{
     System.out.println("Done loading Level 1 ...");
     
     //SETUP: Level 2
-    player20 = new Sprite(p, player20File, 0.25f);
-    player20.moveTo(player20startX, player20startY);
+    player3 = new Sprite(p, player3File, 0.25f);
+    player3.moveTo(player3startX, player3startY);
     level2World.addSpriteCopyTo(runningHorse, 100, 200);  //example Sprite added to a World at a location, with a speed
     level2World.printWorldSprites();
     System.out.println("Done loading Level 2 ...");
@@ -165,6 +171,10 @@ public class Game extends PApplet{
     
     System.out.println("Game started...");
 
+    enemyImg = p.loadImage("images/enemy.png");
+    enemyImg.resize(level1Grid.getTileWidth(), level1Grid.getTileHeight());
+
+
   } //end setup()
 
 
@@ -175,6 +185,39 @@ public class Game extends PApplet{
     // Update Screen Visuals
     updateTitleBar();
     updateScreen();
+
+    // Gravity for Level 1 (time-based)
+    if (currentScreen == level1Grid) {
+        int maxRow = level1Grid.getNumRows() - 1;
+        GridLocation belowLoc = new GridLocation(player2Row + 1, player2Col);
+
+        // Only fall if player is above bottom row and the tile below is empty
+        if (player2Row < maxRow && !level1Grid.hasTileSprite(belowLoc)) {
+            long currentTime = p.millis();
+            if (currentTime - gravityTimer >= gravityInterval) {
+                GridLocation oldLoc = new GridLocation(player2Row, player2Col);
+                player2Row++;
+                level1Grid.clearTileSprite(oldLoc);
+                level1Grid.setTileSprite(belowLoc, player2);
+                gravityTimer = currentTime;
+            }
+        }
+    }
+    
+    // Apply gravity to player3 if in level2World
+    if(currentScreen == level2World) {
+        velocityY += gravity;
+        player3.move(0, velocityY);
+
+        // Check if landed
+        if(player3.getBottom() >= groundY) {
+            player3.setBottom(groundY);
+            velocityY = 0;
+            onGround = true;
+        } else {
+            onGround = false;
+        }
+    }
 
     // Set Timers
     int cycleTime = 1;  //milliseconds
@@ -199,6 +242,54 @@ public class Game extends PApplet{
 
   } //end draw()
 
+
+
+  public void populateSprites() {
+    if (currentScreen == level1Grid) {
+      int lastCol = level1Grid.getNumCols() - 1;
+
+      for (int row = 0; row < level1Grid.getNumRows(); row++) {
+        GridLocation loc = new GridLocation(row, lastCol);
+
+        if (Math.random() < 0.10 && !level1Grid.hasTileImage(loc)) {
+          level1Grid.setTileImage(loc, enemyImg);
+        }
+      }
+    }
+  }
+
+  public void moveSprites() {
+    if (currentScreen == level1Grid) {
+      for (int row = 0; row < level1Grid.getNumRows(); row++) {
+        for (int col = 0; col < level1Grid.getNumCols(); col++) {
+          GridLocation loc = new GridLocation(row, col);
+          if (level1Grid.hasTileImage(loc)) {
+            // Skip player tile
+            if (loc.getRow() == player1Row && loc.getCol() == player1Col) continue;
+
+            int newCol = col - 1;
+            if (newCol >= 0) {
+              GridLocation newLoc = new GridLocation(row, newCol);
+
+              if (loc.getRow() == player1Row && newCol == player1Col) {
+                System.out.println("Enemy collided with player!");
+                level1Grid.clearTileImage(loc);
+                health--; // optional: track player health
+              } else if (!level1Grid.hasTileImage(newLoc)) {
+                level1Grid.setTileImage(newLoc, level1Grid.getTileImage(loc));
+                level1Grid.clearTileImage(loc);
+              }
+            } else {
+              // enemy left the screen
+              level1Grid.clearTileImage(loc);
+            }
+          }
+        }
+      }
+    }
+  }
+
+
   //------------------ USER INPUT METHODS --------------------//
 
 
@@ -212,7 +303,8 @@ public class Game extends PApplet{
     
     //KEYS FOR LEVEL1
     if(currentScreen == level1Grid){
-
+      
+/* 
       //set [W] key to move the player1 up & avoid Out-of-Bounds errors
       if(p.keyCode == 83){
       
@@ -223,8 +315,40 @@ public class Game extends PApplet{
         
 
         //change the field for player2Row
-        player2Row++;
+        player2Row--;
       }
+*/
+
+      if(currentScreen == level1Grid){
+
+    GridLocation oldLoc = new GridLocation(player2Row, player2Col);
+
+    // Move Up
+    if(p.key == 'w' || p.keyCode == UP) {
+        if(player2Row > 0) player2Row--;
+    }
+
+    // Move Down
+    if(p.key == 's' || p.keyCode == DOWN) {
+        if(player2Row < level1Grid.getNumRows() - 1) player2Row++;
+    }
+
+    // Move Left
+    if(p.key == 'a' || p.keyCode == LEFT) {
+        if(player2Col > 0) player2Col--;
+    }
+
+    // Move Right
+    if(p.key == 'd' || p.keyCode == RIGHT) {
+        if(player2Col < level1Grid.getNumCols() - 1) player2Col++;
+    }
+
+    // Update Sprite Position
+    GridLocation newLoc = new GridLocation(player2Row, player2Col);
+    level1Grid.clearTileSprite(oldLoc);
+    level1Grid.setTileSprite(newLoc, player2);
+}
+
 
       // if the 'n' key is pressed, ask for their name
       if(p.key == 'n'){
@@ -351,7 +475,7 @@ public class Game extends PApplet{
       System.out.print("2");
 
       level2World.moveBgXY(-0.3f, 0f);  //adjust speeds of moving backgrounds, -3.0f for 100 ms delays
-      player20.show();
+      player3.show();
 
     }
 
@@ -379,51 +503,8 @@ public class Game extends PApplet{
 
   }
 
-  // Populates enemies or other sprites on the Screen
-  public void populateSprites(){
-
-    //What is the index for the last column?
-    
-
-    //Loop through all the rows in the last column
-
-      //Generate a random number
 
 
-      //10% of the time, decide to add an enemy image to a Tile
-      
-
-  }
-
-  // Moves around the enemies/sprites on the Screen
-  public void moveSprites(){
-
-    //Loop through all of the rows & cols in the grid
-
-        //Store the current GridLocation
-
-        //Store the next GridLocation
-
-        //Check if the current tile has an image that is not player1      
-
-
-          //Get image/sprite from current location
-            
-
-          //CASE 1: Collision with player1
-
-
-          //CASE 2: Move enemy over to new location
-
-
-          //Erase image/sprite from old location
-
-          //System.out.println(loc + " " + grid.hasTileImage(loc));
-
-            
-        //CASE 3: Enemy leaves screen at first column
-
-  }
 
   // Checks if there is a collision between Sprites on the Screen
   public boolean checkCollision(GridLocation loc, GridLocation nextLoc){
