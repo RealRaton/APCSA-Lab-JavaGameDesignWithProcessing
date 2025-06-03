@@ -1,14 +1,12 @@
-/* Input class - to have popup boxes for users to type data
- * Modified from North Toronto Collegiate Institute, Gerry Heffernan: https://ntci.on.ca/compsci/hef/ics3/ch1/1_4.html
- * Authors: Joel Bianchi
- * Last Edit: 5/13/25
- * Renamed prompt --> question
- */
-
-
 import javax.swing.*;
 
-
+/**
+ * Input class - to have popup boxes for users to type data
+ * Modified from North Toronto Collegiate Institute, Gerry Heffernan: https://ntci.on.ca/compsci/hef/ics3/ch1/1_4.html
+ * @author Joel A Bianchi
+ * @version 5/13/25
+ * Renamed prompt --> question
+ */
 public class Input{
 
     /**
@@ -68,4 +66,4 @@ public class Input{
 	// 	JOptionPane.showMessageDialog(null, messageText, "Important message!", JOptionPane.PLAIN_MESSAGE);
 	// }
 
-}
+} // end of Input class

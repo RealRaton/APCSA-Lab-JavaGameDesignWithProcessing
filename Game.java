@@ -5,9 +5,9 @@
  */
 
 //import processing.sound.*;
-
 import processing.core.PApplet;
 import processing.core.PImage;
+
 
 public class Game extends PApplet{
 
@@ -19,7 +19,7 @@ public class Game extends PApplet{
   // VARIABLES: Title Bar
   String titleText = "SuperCoolJumpManAdventure";
   String extraText = "CurrentLevel?";
-  String name = "";
+  String name = "Undefined";
 
   // VARIABLES: Whole Game
   AnimatedSprite runningHorse;
@@ -34,7 +34,7 @@ public class Game extends PApplet{
   int gravityInterval = 400;          // milliseconds between falls (lower = faster)
 
 
-  // VARIABLES: Splash Screen
+  // VARIABLES: splashScreen
   Screen splashScreen;
   PImage splashBg;
   String splashBgFile = "images/apcsa.png";
@@ -61,12 +61,11 @@ public class Game extends PApplet{
   String world2BgFile = "images/sky.png";
   PImage world2Bg;
   Platform plat;
-  // String player4
 
-  // VARIABLES: EndScreen
+  // VARIABLES: endScreen
   World endScreen;
-  String endBgFile = "images/youwin.png";
   PImage endBg;
+  String endBgFile = "images/youwin.png";
 
 
   // VARIABLES: Tracking the current Screen being displayed
@@ -103,6 +102,12 @@ public class Game extends PApplet{
 
     //SETUP: Load BG images used in all screens
     splashBg = p.loadImage(splashBgFile);
+    grid1Bg = p.loadImage(grid1BgFile);
+    skyWorldBg = p.loadImage(skyWorldBgFile);
+    brickWorldBg = loadImage(brickWorldBgFile);
+    endBg = p.loadImage(endBgFile);
+
+    //SETUP: If non-moving, Resize all BG images to exactly match the screen size
     splashBg.resize(p.width, p.height);
     world1Bg = p.loadImage(world1BgFile);
     world1Bg.resize(p.width, p.height);
@@ -116,7 +121,7 @@ public class Game extends PApplet{
     endScreen = new World(p, "end", endBg);
     currentScreen = splashScreen;
 
-    //SETUP: All Game objects
+    //SETUP: Construct Game objects used in All Screens
     runningHorse = new AnimatedSprite(p, "sprites/horse_run.png", "sprites/horse_run.json", 50.0f, 75.0f, 1.0f);
 
     //SETUP: World 1
@@ -162,7 +167,7 @@ public class Game extends PApplet{
   //(Anything drawn on the screen should be called from here)
   public void draw() {
 
-    // Update Screen Visuals
+    // DRAW LOOP: Update Screen Visuals
     updateTitleBar();
     updateScreen();
 
@@ -245,13 +250,13 @@ public class Game extends PApplet{
       slowCycleTimer = new CycleTimer(p, slowCycleTime);
     }
 
-    // Move Sprites
+    // DRAW LOOP: Populate & Move Sprites
     if(slowCycleTimer.isDone()){
       populateSprites();
       moveSprites();
     }
 
-    // Pause Cycle
+    // DRAW LOOP: Pause Game Cycle
     currentScreen.pause(cycleTime);   // slows down the game cycles
 
     // Check for end of game
@@ -389,7 +394,6 @@ public class Game extends PApplet{
       plat.setSpeed(0,0);
     }
 
-
   }
 
   // Known Processing method that automatically will run when a mouse click triggers it
@@ -402,12 +406,12 @@ public class Game extends PApplet{
     int color = p.get(p.mouseX, p.mouseY);
     PColor.printPColor(p, color);
 
-    // Print grid coordinate clicked
+    // if the Screen is a Grid, print grid coordinate clicked
     if(currentScreen instanceof Grid){
       System.out.println("Grid location --> " + ((Grid) currentScreen).getGridLocation());
     }
 
-    // "Mark" the grid coordinate to track the state of the Grid
+    // if the Screen is a Grid, "mark" the grid coordinate to track the state of the Grid
     if(currentScreen instanceof Grid){
       ((Grid) currentScreen).setMark("X",((Grid) currentScreen).getGridLocation());
     }
@@ -421,6 +425,9 @@ public class Game extends PApplet{
   public void updateTitleBar(){
 
     if(!isGameOver()) {
+
+      extraText = currentScreen.getName();
+
       //set the title each loop
       surface.setTitle(titleText + "    " + extraText + " " + name + ": " + health);
 
@@ -458,7 +465,7 @@ public class Game extends PApplet{
       grid0.setTileSprite(player2Loc, jumpMan);
 
       // Moves to next level based on a button click
-      b1.show();
+      // b1.show();
       if(b1.isClicked()){
         System.out.println("\nButton Clicked");
         currentScreen = world1;
@@ -548,4 +555,4 @@ public class Game extends PApplet{
   }
 
 
-} //close class
+} // end of Game class
