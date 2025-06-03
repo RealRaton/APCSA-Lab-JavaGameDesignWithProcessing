@@ -1,6 +1,6 @@
 /* Game Class Starter File
  * Authors: Sayeedus Salihin, Joel A. Bianchi
- * Last Edit: 5/22/25
+ * Last Edit: 6/3/25
  * using new Screen show method
  */
 
@@ -153,7 +153,11 @@ public class Game extends PApplet{
     plat = new Platform(p, PColor.MAGENTA, 500.0f, 100.0f, 200.0f, 20.0f);
     plat.setOutlineColor(PColor.BLACK);
     plat.startGravity(5.0f); //sets gravity to a rate of 5.0
-    world2.addSprite(plat);    
+    world1.addSprite(plat);    
+    world1.addSprite(new Platform(p, PColor.GREEN, 100, 400, 150, 20));
+    world1.addSprite(new Platform(p, PColor.BLUE, 300, 300, 200, 20));
+    world1.addSprite(new Platform(p, PColor.RED, 600, 350, 180, 20));
+
     System.out.println("Done loading Level 3 ...");
 
 
@@ -198,7 +202,7 @@ public class Game extends PApplet{
     }
     
     // Apply gravity to player3 if in level2World
-    if(currentScreen == world1) {
+   /*  if(currentScreen == world1) {
         velocityY += gravity;
         player3.move(0, velocityY);
 
@@ -211,6 +215,35 @@ public class Game extends PApplet{
             onGround = false;
         }
     }
+      */
+
+if(currentScreen == world1) {
+    velocityY += gravity;
+    player3.move(0, velocityY);
+    onGround = false;
+
+    for (Sprite s : world1.getSprites()) {
+        if (s instanceof Platform) {
+            if (player3.getBottom() >= s.getTop() &&
+                player3.getBottom() <= s.getTop() + 20 &&
+                player3.getCenterX() >= s.getLeft() &&
+                player3.getCenterX() <= s.getRight()) {
+                
+                player3.setBottom(s.getTop());
+                velocityY = 0;
+                onGround = true;
+            }
+        }
+    }
+
+    if(player3.getBottom() >= groundY) {
+        player3.setBottom(groundY);
+        velocityY = 0;
+        onGround = true;
+    }
+}
+
+
 
     // Set Timers
     int cycleTime = 1;  //milliseconds
@@ -244,7 +277,8 @@ public class Game extends PApplet{
       for (int row = 0; row < grid0.getNumRows(); row++) {
         GridLocation loc = new GridLocation(row, lastCol);
 
-        if (Math.random() < 0.10 && !grid0.hasTileImage(loc)) {
+        double spawnChance = Math.random() * 0.2;
+            if (Math.random() < spawnChance && !grid0.hasTileImage(loc)) {
           grid0.setTileImage(loc, enemyImg);
         }
       }
@@ -333,6 +367,10 @@ public class Game extends PApplet{
 
     //KEYS FOR world1
     if(currentScreen == world1){
+      if((p.key == 'w' || p.keyCode == UP) && onGround){
+    velocityY = jumpStrength;
+    onGround = false;
+}
 
 
 
@@ -449,6 +487,12 @@ public class Game extends PApplet{
 
     // UPDATE: level3World Screen
     if(currentScreen == world2){
+
+      if((p.key == 'w' || p.keyCode == UP) && onGround){
+    velocityY = jumpStrength;
+    onGround = false;
+}
+
 
       // Print a '3 in console when level3
       System.out.print("2");
