@@ -24,6 +24,7 @@ public class Game extends PApplet{
   // VARIABLES: Whole Game
   AnimatedSprite runningHorse;
   boolean doAnimation;
+  AnimatedSprite jumpMan;
 
   // VARIABLES: Splash Screen
   Screen splashScreen;
@@ -38,15 +39,19 @@ public class Game extends PApplet{
   int player2Row = 0;
   int player2Col = 2;
   int health = 3;
-  AnimatedSprite player2;
-  Button b1;
 
-  // VARIABLES: Level2World Pixel-based Screen
+  Button b1;
+  boolean isJumping = false;
+  int jumpTimer = 0;
+  final int maxJumpFrames = 8;
+
+
+  // VARIABLES: world1World Pixel-based Screen
   World world1;
-  String level2BgFile = "images/sky.png";
-  PImage level2Bg;
-  String player3File = "images/zapdos.png";
-  Sprite player3; //Use Sprite for a pixel-based Location
+  String world1BgFile = "images/grasslands.png";
+  PImage world1Bg;
+  // String player3File = "images/zapdos.png";
+  // Sprite player3; //Use Sprite for a pixel-based Location
   float velocityY = 0;
   float gravity = 0.8f;
   float jumpStrength = -15.0f;
@@ -55,10 +60,10 @@ public class Game extends PApplet{
   int player3startX = 50;
   int player3startY = 300;
 
-  //VARIABLES: Level3World Pixel-based Platformer
+  //VARIABLES: world2World Pixel-based Platformer
   World world2;
-  String level3BgFile = "images/wall.jpg";
-  PImage level3Bg;
+  String world2BgFile = "images/sky.png";
+  PImage world2Bg;
   Platform plat;
   // String player4
 
@@ -106,8 +111,8 @@ public class Game extends PApplet{
     splashBg.resize(p.width, p.height);
     grid1Bg = p.loadImage(grid1BgFile);
     grid1Bg.resize(p.width, p.height);
-    level2Bg = p.loadImage(level2BgFile);
-    //level2Bg.resize(p.width, p.height);
+    world1Bg = p.loadImage(world1BgFile);
+    //world1Bg.resize(p.width, p.height);
     endBg = p.loadImage(endBgFile);
     endBg.resize(p.width, p.height);
 
@@ -115,10 +120,10 @@ public class Game extends PApplet{
     splashScreen = new Screen(this, "splash", splashBg);
     grid0 = new Grid(this, "grasslands", grid1Bg, 6, 8);
     //grid1Grid.startPrintingGridMarks();
-    world1 = new World(p, "sky", level2BgFile, 4.0f, 0.0f, -800.0f); //moveable World constructor --> defines center & scale (x, scale, y)???
+    world1 = new World(p, "sky", world1BgFile, 4.0f, 0.0f, -800.0f); //moveable World constructor --> defines center & scale (x, scale, y)???
     System.out.println( "World constructed: " + Util.toStringPImage(world1.getBgImage()));
        
-    // level2World = new World("sky", level2Bg);   //non-moving World construtor
+    // world1World = new World("sky", world1Bg);   //non-moving World construtor
     endScreen = new World(p, "end", endBg);
     currentScreen = splashScreen;
 
@@ -126,8 +131,8 @@ public class Game extends PApplet{
     runningHorse = new AnimatedSprite(p, "sprites/horse_run.png", "sprites/horse_run.json", 50.0f, 75.0f, 1.0f);
 
     //SETUP: Level 1
-    player2 = new AnimatedSprite(p, "sprites/chick_walk.png", "sprites/chick_walk.json", 0.0f, 0.0f, 0.5f);
-    grid0.setTileSprite(new GridLocation (player2Row, player2Col), player2);
+    jumpMan = new AnimatedSprite(p, "sprites/chick_walk.png", "sprites/chick_walk.json", 0.0f, 0.0f, 0.5f);
+    grid0.setTileSprite(new GridLocation (player2Row, player2Col), jumpMan);
 
     b1 = new Button(p, "rect", 625, 525, 150, 50, "GoTo Level 2");
     // b1.setFontStyle("fonts/spidermanFont.ttf");
@@ -147,9 +152,9 @@ public class Game extends PApplet{
     System.out.println("Done loading Level 2 ...");
 
     // SETUP: Level 3
-    level3Bg = loadImage(level3BgFile);
-    level3Bg.resize(p.width, p.height);
-    world2 = new World(p,"platformer", level3Bg);
+    world2Bg = loadImage(world2BgFile);
+    world2Bg.resize(p.width, p.height);
+    world2 = new World(p,"platformer", world2Bg);
     plat = new Platform(p, PColor.MAGENTA, 500.0f, 100.0f, 200.0f, 20.0f);
     plat.setOutlineColor(PColor.BLACK);
     plat.startGravity(5.0f); //sets gravity to a rate of 5.0
@@ -195,13 +200,13 @@ public class Game extends PApplet{
                 GridLocation oldLoc = new GridLocation(player2Row, player2Col);
                 player2Row++;
                 grid0.clearTileSprite(oldLoc);
-                grid0.setTileSprite(belowLoc, player2);
+                grid0.setTileSprite(belowLoc, jumpMan);
                 gravityTimer = currentTime;
             }
         }
     }
     
-    // Apply gravity to player3 if in level2World
+    // Apply gravity to player3 if in world1World
    /*  if(currentScreen == world1) {
         velocityY += gravity;
         player3.move(0, velocityY);
@@ -219,6 +224,13 @@ public class Game extends PApplet{
 
 if(currentScreen == world1) {
     velocityY += gravity;
+    if (isJumping) {
+    jumpTimer++;
+    if (jumpTimer > maxJumpFrames) {
+        isJumping = false;
+    }
+}
+
     player3.move(0, velocityY);
     onGround = false;
 
@@ -232,6 +244,9 @@ if(currentScreen == world1) {
                 player3.setBottom(s.getTop());
                 velocityY = 0;
                 onGround = true;
+                isJumping = false;
+                jumpTimer = 0;
+
             }
         }
     }
@@ -341,7 +356,7 @@ if(currentScreen == world1) {
       // Move Up
       if(p.key == 'w' || p.keyCode == UP) {
           if(player2Row > 0) player2Row--;
-          player2.move(0,-5);
+          jumpMan.move(0,-5);
       }
 
       // Move Down
@@ -362,22 +377,19 @@ if(currentScreen == world1) {
       // Update Sprite Position
       GridLocation newLoc = new GridLocation(player2Row, player2Col);
       grid0.clearTileSprite(oldLoc);
-      grid0.setTileSprite(newLoc, player2);
+      grid0.setTileSprite(newLoc, jumpMan);
     }
 
     //KEYS FOR world1
     if(currentScreen == world1){
-      if((p.key == 'w' || p.keyCode == UP) && onGround){
+    if ((p.key == 'w' || p.keyCode == UP) && onGround) {
     velocityY = jumpStrength;
-    onGround = false;
+    isJumping = true;
+    jumpTimer = 0;
+    player3.move(5, 0); // forward boost on jump
+}
 }
 
-
-
-
-
-
-    }
 
 
     // if the 'n' key is pressed, ask for their name
@@ -386,7 +398,7 @@ if(currentScreen == world1) {
     }
 
     //CHANGING SCREENS BASED ON KEYS
-    //change to grid1 if 1 key pressed, level2 if 2 key is pressed
+    //change to grid1 if 1 key pressed, world1 if 2 key is pressed
     if(p.key == '0'){
       currentScreen = grid0;
     } else if(p.key == '1'){
@@ -463,7 +475,7 @@ if(currentScreen == world1) {
 
       // Displays the player2 image
       GridLocation player2Loc = new GridLocation(player2Row, player2Col);
-      grid0.setTileSprite(player2Loc, player2);
+      grid0.setTileSprite(player2Loc, jumpMan);
 
       // Moves to next level based on a button click
       b1.show();
@@ -474,10 +486,10 @@ if(currentScreen == world1) {
     
     }
     
-    // UPDATE: level2World Screen
+    // UPDATE: world1World Screen
     if(currentScreen == world1){
 
-      // Print a '2' in console when level2
+      // Print a '2' in console when world1
       System.out.print("1");
 
       world1.moveBgXY(-0.3f, 0f);  //adjust speeds of moving backgrounds, -3.0f for 100 ms delays
@@ -485,7 +497,7 @@ if(currentScreen == world1) {
 
     }
 
-    // UPDATE: level3World Screen
+    // UPDATE: world2World Screen
     if(currentScreen == world2){
 
       if((p.key == 'w' || p.keyCode == UP) && onGround){
@@ -494,7 +506,7 @@ if(currentScreen == world1) {
 }
 
 
-      // Print a '3 in console when level3
+      // Print a '3 in console when world2
       System.out.print("2");
 
 
