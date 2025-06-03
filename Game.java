@@ -53,7 +53,10 @@ public class Game extends PApplet{
   float groundY = 500;
   int enemystartX = 50;
   int enemystartY = 300;
-
+  Coordinate[] spawnPoints = { 
+    new Coordinate(100,100), 
+    new Coordinate(200,200) 
+  };
   
 
   //VARIABLES: world2World Pixel-based Platformer
@@ -71,12 +74,7 @@ public class Game extends PApplet{
   // VARIABLES: Tracking the current Screen being displayed
   Screen currentScreen;
   CycleTimer slowCycleTimer;
-
-
-
   boolean start = true;
-
-  PImage enemyImg;  // enemy image for level 1
 
 
   //------------------ REQUIRED PROCESSING METHODS --------------------//
@@ -102,22 +100,17 @@ public class Game extends PApplet{
 
     //SETUP: Load BG images used in all screens
     splashBg = p.loadImage(splashBgFile);
-    grid1Bg = p.loadImage(grid1BgFile);
-    skyWorldBg = p.loadImage(skyWorldBgFile);
-    brickWorldBg = loadImage(brickWorldBgFile);
+    world1Bg = p.loadImage(world1BgFile);
     endBg = p.loadImage(endBgFile);
 
     //SETUP: If non-moving, Resize all BG images to exactly match the screen size
     splashBg.resize(p.width, p.height);
-    world1Bg = p.loadImage(world1BgFile);
     world1Bg.resize(p.width, p.height);
-    endBg = p.loadImage(endBgFile);
     endBg.resize(p.width, p.height);
 
     //SETUP: Screens, Worlds, Grids
     splashScreen = new Screen(this, "splash", splashBg);
     world1 = new World(p, "sky", world1BgFile, 1.0f, 0.0f, 0.0f); //moveable World constructor --> defines center & scale (x, scale, y)???
-    // System.out.println( "World constructed: " + Util.toStringPImage(world1.getBgImage()));
     endScreen = new World(p, "end", endBg);
     currentScreen = splashScreen;
 
@@ -126,7 +119,6 @@ public class Game extends PApplet{
 
     //SETUP: World 1
     jumpMan = new AnimatedSprite(p, "sprites/chick_walk.png", "sprites/chick_walk.json", 0.0f, 0.0f, 0.5f);
-    enemyImg = p.loadImage("images/enemy.png");
     enemy = new Sprite(p, enemyFile, 0.25f);
     enemy.moveTo(enemystartX, enemystartY);
     world1.addSprite(enemy);
@@ -287,36 +279,36 @@ public class Game extends PApplet{
 
   public void moveSprites() {
 
-    if (currentScreen == grid0) {
+    if (currentScreen == world1) {
 
-      for (int row = 0; row < grid0.getNumRows(); row++) {
-        for (int col = 0; col < grid0.getNumCols(); col++) {
-          GridLocation loc = new GridLocation(row, col);
-          if (grid0.hasTileImage(loc)) {
+      // for (int row = 0; row < grid0.getNumRows(); row++) {
+      //   for (int col = 0; col < grid0.getNumCols(); col++) {
+      //     GridLocation loc = new GridLocation(row, col);
+      //     if (grid0.hasTileImage(loc)) {
 
-            // Skip player tile
-            if (loc.getRow() == player2Row && loc.getCol() == player2Col) continue;
+      //       // Skip player tile
+      //       if (loc.getRow() == player2Row && loc.getCol() == player2Col) continue;
 
-            int newCol = col - 1;   //moves enemies to the left
-            if (newCol >= 0) {
-              GridLocation newLoc = new GridLocation(row, newCol);
+      //       int newCol = col - 1;   //moves enemies to the left
+      //       if (newCol >= 0) {
+      //         GridLocation newLoc = new GridLocation(row, newCol);
 
-              if (loc.getRow() == player2Row && newCol == player2Col) {
-                System.out.println("Enemy collided with player!");
-                grid0.clearTileImage(loc);
-                health--; // optional: track player health
-              } else if (!grid0.hasTileImage(newLoc)) {
-                grid0.setTileImage(newLoc, grid0.getTileImage(loc));
-                grid0.clearTileImage(loc);
-              }
-            } else {
-              // enemy left the screen
-              grid0.clearTileImage(loc);
-            }
-          }
-        }
-      }
-    }   // close grid1 moving
+      //         if (loc.getRow() == player2Row && newCol == player2Col) {
+      //           System.out.println("Enemy collided with player!");
+      //           grid0.clearTileImage(loc);
+      //           health--; // optional: track player health
+      //         } else if (!grid0.hasTileImage(newLoc)) {
+      //           grid0.setTileImage(newLoc, grid0.getTileImage(loc));
+      //           grid0.clearTileImage(loc);
+      //         }
+      //       } else {
+      //         // enemy left the screen
+      //         grid0.clearTileImage(loc);
+      //       }
+      //     }
+      //   }
+      // }
+    }   // close world1 moving
 
 
 
@@ -333,47 +325,41 @@ public class Game extends PApplet{
     //check what key was pressed
     System.out.println("\nKey pressed: " + p.keyCode); //key gives you a character for the key pressed
     
-    //KEYS FOR grid0
-    if(currentScreen == grid0){
-
-      GridLocation oldLoc = new GridLocation(player2Row, player2Col);
+    //KEYS FOR World1
+    if(currentScreen == world1){
 
       // Move Up
       if(p.key == 'w' || p.keyCode == UP) {
-          if(player2Row > 0) player2Row--;
+          // if(player2Row > 0) player2Row--;
           jumpMan.move(0,-5);
       }
 
       // Move Down
       if(p.key == 's' || p.keyCode == DOWN) {
-          if(player2Row < grid0.getNumRows() - 1) player2Row++;
+          // if(player2Row < grid0.getNumRows() - 1) player2Row++;
       }
 
       // Move Left
       if(p.key == 'a' || p.keyCode == LEFT) {
-          if(player2Col > 0) player2Col--;
+          // if(player2Col > 0) player2Col--;
       }
 
       // Move Right
       if(p.key == 'd' || p.keyCode == RIGHT) {
-          if(player2Col < grid0.getNumCols() - 1) player2Col++;
+          // if(player2Col < grid0.getNumCols() - 1) player2Col++;
       }
 
       // Update Sprite Position
-      GridLocation newLoc = new GridLocation(player2Row, player2Col);
-      grid0.clearTileSprite(oldLoc);
-      grid0.setTileSprite(newLoc, jumpMan);
+
+
     }
 
-    //KEYS FOR world1
-    if(currentScreen == world1){
     if ((p.key == 'w' || p.keyCode == UP) && onGround) {
-    velocityY = jumpStrength;
-    isJumping = true;
-    jumpTimer = 0;
-    enemy.move(5, 0); // forward boost on jump
-}
-}
+      velocityY = jumpStrength;
+      isJumping = true;
+      jumpTimer = 0;
+      enemy.move(5, 0); // forward boost on jump
+  }
 
 
 
@@ -383,10 +369,7 @@ public class Game extends PApplet{
     }
 
     //CHANGING SCREENS BASED ON KEYS
-    //change to grid1 if 1 key pressed, world1 if 2 key is pressed
-    if(p.key == '0'){
-      currentScreen = grid0;
-    } else if(p.key == '1'){
+    if(p.key == '1'){
       currentScreen = world1;
     } else if(p.key == '2'){
       currentScreen = world2;
@@ -454,38 +437,23 @@ public class Game extends PApplet{
       }
     }
 
-    // UPDATE: grid1Grid Screen
-    if(currentScreen == grid0){
-
-      // Print a '1' in console when grid1
-      System.out.print("0");
-
-      // Displays the player2 image
-      GridLocation player2Loc = new GridLocation(player2Row, player2Col);
-      grid0.setTileSprite(player2Loc, jumpMan);
-
-      // Moves to next level based on a button click
-      // b1.show();
-      if(b1.isClicked()){
-        System.out.println("\nButton Clicked");
-        currentScreen = world1;
-      }
-    
-    }
-    
+   
     // UPDATE: world1World Screen
     if(currentScreen == world1){
 
-      // Print a '2' in console when world1
+      // Print a '1' in console when world1
       System.out.print("1");
 
-      world1.moveBgXY(-0.3f, 0f);  //adjust speeds of moving backgrounds, -3.0f for 100 ms delays
+      // world1.moveBgXY(-0.3f, 0f);  //adjust speeds of moving backgrounds, -3.0f for 100 ms delays
       // enemy.show();
 
     }
 
     // UPDATE: world2World Screen
     if(currentScreen == world2){
+
+      // Print a '2' in console when world1
+      System.out.print("2");
 
       if((p.key == 'w' || p.keyCode == UP) && onGround){
     velocityY = jumpStrength;
