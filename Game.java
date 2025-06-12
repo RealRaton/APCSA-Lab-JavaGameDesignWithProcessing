@@ -1,6 +1,6 @@
 /* Game Class Starter File
  * Authors: Sayeedus Salihin, Joel A. Bianchi
- * Last Edit: 6/3/25
+ * Last Edit: 6/12/25
  * using new Screen show method
  */
 
@@ -64,6 +64,8 @@ public class Game extends PApplet{
   String world2BgFile = "images/sky.png";
   PImage world2Bg;
   Platform plat;
+  
+  int testUpdate = 0;
 
   // VARIABLES: endScreen
   World endScreen;
