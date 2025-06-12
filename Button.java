@@ -1,27 +1,31 @@
+/* Button Class - Used to add a button into a Game
+ * Author: Joel Bianchi
+ * Last Edit: 5/20/25
+ * Font edits
+ */
+
 import processing.core.PApplet;
 import processing.core.PFont;
 import java.awt.Font;
 import java.io.InputStream;
 
-/**
- * Button Class - Used to add a button into a Game
- * @author Joel A Bianchi
- * Last Edit: 5/22/25
- * Button IS-A Sprite now
- */
-public class Button extends Sprite{
+
+public class Button {
 
     PApplet p;
-
     //------------------ BUTTON FIELDS --------------------//
     private String shape;
-    private float shapeX, shapeY;     //coordinates of CENTER of button shape
-    private float shapeW, shapeH;     //size of shape in pixels
+    private float shapeX, shapeY;
+    //coordinates of CENTER of button shape
+    private float shapeW, shapeH;
+    //size of shape in pixels
     private float shapeRounding;
     private String text;
     private int textColor;
-    private String fontStyle;           //file path to system or saved font file
-    private PFont font;                 //font object
+    private String fontStyle;
+    //file path to system or saved font file
+    private PFont font;
+    //font object
     private float fontFactor;
     private float fontSize;
     private int baseColor;
@@ -32,15 +36,13 @@ public class Button extends Sprite{
     private boolean isVisible;
     private boolean doesHoverHighlight;
     private boolean doesClickHighlight;
-
-
     //------------------ BUTTON CONSTRUCTORS --------------------//
 
     //Button Constructor
     public Button(PApplet p, String shape, float x, float y, float w, float h, String text) {
 
-        super(p, null, 1.0f, x, y,false);  //if Button is Sprite
         this.p = p;
+        //super(null,1.0, x, y,false);  //if Button is Sprite
         this.shape = shape.toUpperCase();
         this.shapeW = w;
         this.shapeH = h;
@@ -59,14 +61,16 @@ public class Button extends Sprite{
         this.currentColor = baseColor;
         this.outlineColor = PColor.BLACK;
         this.isVisible = true;
-        this.fontStyle = "Georgia"; //"Arial", "Courier New", "Georgia"
+        this.fontStyle = "Georgia";
+        //"Arial", "Courier New", "Georgia"
         this.font = p.createFont(fontStyle, fontSize);
     }
 
 
     //------------------ BUTTON METHODS --------------------//
 
-    //Button method to be called each cycle -- ie. inside draw() or updateScreen() 
+    //Button method to be called each cycle -- ie.
+    //inside draw() or updateScreen() 
     public void show() {
     
         //Sets outline stroke around button (3 pixels, BLACK)
@@ -84,7 +88,6 @@ public class Button extends Sprite{
 
         //Set color inside Button
         p.fill(currentColor);
-
         //Only show the button if visible
         if(isVisible){
 
@@ -109,7 +112,6 @@ public class Button extends Sprite{
             p.textSize(fontSize);
             p.textFont(font);
             p.text(text, shapeX, shapeY);
-
         }
     }
 
@@ -183,7 +185,8 @@ public class Button extends Sprite{
     }
 
     //Method to pass in a Processing color or null
-    //ie. Color.getColor(0,0,255) OR Color.BLUE
+    //ie.
+    //Color.getColor(0,0,255) OR Color.BLUE
     public void setHoverColor(Integer color){
         if(color != null){
             setHoverHighlight(true);
@@ -198,7 +201,8 @@ public class Button extends Sprite{
     }
 
     //Method to pass in a Processing color or null
-    //ie. color(0,0,255) for blue
+    //ie.
+    //color(0,0,255) for blue
     public void setClickColor(Integer color){
         if(color != null){
             setClickHighlight(true);
@@ -220,5 +224,6 @@ public class Button extends Sprite{
         return "Button shape " + this.shape + " with text \"" + this.text + "\" @loc " + this.shapeX +","+this.shapeY + " w:"+this.shapeW+" h:"+this.shapeH;
     }
 
-} // end of Button class
 
+
+} //end Button class

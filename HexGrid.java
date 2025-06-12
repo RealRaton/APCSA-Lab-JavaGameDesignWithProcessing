@@ -1,3 +1,14 @@
+/* HexGrid Class - useful for tile-based games with more flavor!
+ * Inspired from CSRessel's Catan Game & Emmanuel Suriel's Grid class
+ * https://github.com/CSRessel/catan/blob/master/src/gui/CatanBoard.java
+ * Adapted for Processing
+ * Authors: Joel Bianchi, Naomi Gaylor, Ezzeldin Moussa
+ * Last Edit: 5/10/25
+ * Using new PColor methods
+ * NOT FULLY FUNCTIONAL YET
+ */
+ 
+
 import java.awt.Polygon;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -5,28 +16,17 @@ import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PGraphics;
 
-/**
- * HexGrid Class - useful for tile-based games with more flavor!
- * Inspired from CSRessel's Catan Game & Emmanuel Suriel's Grid class
- * https://github.com/CSRessel/catan/blob/master/src/gui/CatanBoard.java
- * Adapted for Processing
- * @author Joel A Bianchi
- * @author Naomi Gaylor 2022
- * @author Ezzeldin Moussa 2022
- * @version 5/10/25
- * Using new PColor methods
- * NOT FULLY FUNCTIONAL YET
- */
+
 public class HexGrid {
 
 	PApplet p;
 
 	ArrayList<HexLocation> allHexLocations;
 	ArrayList<HexLocation> unclaimedLocations;
-	
-    private HexTile[][] map;
+	private HexTile[][] map;
     private int defaultOutlineColor = 0xFFFFFF; // #FFFFFF;	//WHITE
-    private int defaultFillColor = 0x000000; // #000000; 		//BLACK
+    private int defaultFillColor = 0x000000;
+    // #000000; 		//BLACK
 	private int defaultBgColor = PColor.get(164,200,218);
 	
 	private boolean bgSet = false;
@@ -39,19 +39,18 @@ public class HexGrid {
 	private int heightMargin = 100;
 	private int widthMargin;
 	private final double sqrt3div2 = 0.86602540378;
-
-    //HexGrid Constructor #1
+	//HexGrid Constructor #1
     public HexGrid(PApplet p, int hexGen){
 
 		this.p = p;
 
 		this.hexGen = hexGen;
-
 		//Generate all the valid hexLocations
 		allHexLocations = new ArrayList<HexLocation>();
         
 		hexDiameter = hexGen *2 -1;	//originally 5
-		int midHex = hexGen;	//originally 3
+		int midHex = hexGen;
+		//originally 3
 		System.out.println("mid:" + midHex);
 
 		//Create top half of HexLocations
@@ -73,11 +72,10 @@ public class HexGrid {
 		//Construct 2D array of HexTiles
 		int row = hexDiameter + 2;
 		int col = row;
-        map = new HexTile[row][col];
+		map = new HexTile[row][col];
 
 		//Initialize unclaimed HexLocations arrayList
 		unclaimedLocations = new ArrayList<HexLocation>();
-
 		for(HexLocation loc: allHexLocations){
 
 			//Generate hexTiles for each HexLocation
@@ -87,7 +85,6 @@ public class HexGrid {
 			hTile.setOutlineColor(defaultOutlineColor);
 			setHexTileCenterPixels(hTile);
 			setHexTilePoly(hTile);
-
 			//Generate unclaimedTiles ArrayList
 			unclaimedLocations.add(loc);
 		}
@@ -114,7 +111,6 @@ public class HexGrid {
 		int startY = loc1.getYCoord();
 		int endX = loc2.getXCoord();
 		int endY = loc2.getYCoord();
-
 		if(endX==startX+1 || endX==startX-1 || endX==startX){
 			if(endY==startY+1 || endY==startY-1 || endY==startY){
 				return true;
@@ -129,7 +125,6 @@ public class HexGrid {
 		int startY = loc1.getYCoord();
 		int endX = loc2.getXCoord();
 		int endY = loc2.getYCoord();
-
 		if(endX==startX+2 || endX==startX+1 || endX==startX-2 || endX==startX-1 || endX==startX){
 			if(endY==startY+2 || endY==startY+1 || endY==startY-2 || endY==startY-1 || endY==startY){
 				return true;
@@ -143,7 +138,7 @@ public class HexGrid {
 		for(int i=0; i<unclaimedLocations.size(); i++){
       		if(unclaimedLocations.get(i).equals(loc)){
         		unclaimedLocations.remove(i);
-				return;
+        		return;
 			}
 		}
 		System.out.println("Error when trying to remove Location: " + loc);
@@ -160,7 +155,7 @@ public class HexGrid {
         int mapHeight = map.length;
         //int hexagonSide = 50;
 		//int hexagonSide = (mapHeight - 2 * heightMargin) / 8;
-        int widthMargin = (p.width - (int) (10 * hexagonSide * sqrt3div2)) / 2;
+		int widthMargin = (p.width - (int) (10 * hexagonSide * sqrt3div2)) / 2;
 
         // Graphics2D g2 = (Graphics2D)g;
         // g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -168,7 +163,6 @@ public class HexGrid {
         // super.paintComponent(g2);
 
 		//System.out.println("ahl size: " + allHexLocations.size());
-
 		//Fill in each Hex
 		for(HexLocation loc: allHexLocations){
 			int x = loc.getXCoord();
@@ -207,12 +201,11 @@ public class HexGrid {
     public void fillOneHex(HexTile hTile){
 
         boolean hasImage = hTile.hasImage();
-		//System.out.println("drawHex: x:"+tile.getLocation().getXCoord()+",y:"+tile.getLocation().getYCoord());
+        //System.out.println("drawHex: x:"+tile.getLocation().getXCoord()+",y:"+tile.getLocation().getYCoord());
 		
         //FILL IN SOLID COLOR - fill in hexTile with a solid color if no picture
         if(!hasImage){
 			int fillColor = hTile.getColor();
-			
 			// ???
 
 		}
@@ -220,12 +213,10 @@ public class HexGrid {
         //FILL IN PICTURE
         if(hasImage){    
 			PImage photo = hTile.getImage();
-			
 			try{
 				//resize the image to fit in the hex
 				int iSize = (int) (hexagonSide * 1.25);
 				photo.resize(iSize, iSize);
-
 				//mask the image to the hex shape
 				PGraphics maskImage;
 				maskImage = p.createGraphics(iSize,iSize);
@@ -246,9 +237,7 @@ public class HexGrid {
 				//System.out.println("Img: " + locImageName);
 				//System.out.println("nPoints:" + poly.npoints);
 				//System.out.println("ix:" + ix + "\tiy:"+iy);
-
 				//System.out.println("Drew image for x:" + x + ",y:" + y);
-
 			} catch(Exception e){
 
 			} //end catch
@@ -265,7 +254,6 @@ public class HexGrid {
 			PGraphics pg = getHexPGraphics(hTile);
 
 			//DRAW THE OUTLINE!???
-
 		}
 	}
 
@@ -273,12 +261,12 @@ public class HexGrid {
 //---------------------- HELPER METHODS -------------------------------//
     private int getImageX(HexTile hTile, PImage image){
     	Point center = findTileCenter(hTile);
-        int imageWidth =  image.width;
+    	int imageWidth =  image.width;
         return center.x - imageWidth/2; 
     }
     private int getImageY(HexTile hTile, PImage image){        
         Point center = findTileCenter(hTile);
-        int imageHeight =  image.height;
+    	int imageHeight =  image.height;
         return center.y - imageHeight/2; 
     }
 
@@ -295,12 +283,10 @@ public class HexGrid {
 		// 		- (int) ((y - 1) * hexagonSide * sqrt3div2);
 		// int yCenter = boardHeight - (heightMargin + hexagonSide
 		// 		+ (int) ((y - 1) * hexagonSide * 1.5));
-
 		//code for a top left origin (to mimic how Java 2D arrays are modeled) with rows as y and cols as x
 		int xCenter = widthMargin + (int) (3 * hexagonSide * sqrt3div2)
 		+ (int) ((x - 1) * 2 * hexagonSide * sqrt3div2)
 		- (int) ((y - 1) * hexagonSide * sqrt3div2);
-		
 		int yCenter = (heightMargin + hexagonSide 
 		+ (int) ((y - 1) * hexagonSide * 1.5));
 
@@ -314,7 +300,7 @@ public class HexGrid {
 	//Fill in entire hexGrid with specified tileColor
     public void setAllTileColors(int tileColor){
         this.defaultFillColor = tileColor;
-          for (int r = 0; r < map.length; r++) {
+        for (int r = 0; r < map.length; r++) {
             for (int c = 0; c < map[0].length; c++) {
                 if (map[r][c] != null){
                     map[r][c].setColor(defaultFillColor);
@@ -326,7 +312,7 @@ public class HexGrid {
 	//Outlines all hexTiles with specified outlineColor
 	public void setAllTileOutlines(int outlineColor){
         this.defaultFillColor = outlineColor;
-          for (int r = 0; r < map.length; r++) {
+        for (int r = 0; r < map.length; r++) {
             for (int c = 0; c < map[0].length; c++) {
                 if (map[r][c] != null){
                     map[r][c].setOutlineColor(defaultFillColor);
@@ -346,14 +332,14 @@ public class HexGrid {
 	//method to access the color of specified loc
     public int getTileColor(HexLocation loc){
 		HexTile hTile = getHexTile(loc);
-        int oldColor = hTile.getColor();
+		int oldColor = hTile.getColor();
         return oldColor;
     }
 
 	//method to change the color of specified loc, returns the previous color
     public int setTileColor(HexLocation loc, int tileColor){
 		HexTile hTile = getHexTile(loc);
-        int oldColor = hTile.getColor();
+		int oldColor = hTile.getColor();
         hTile.setColor(tileColor);
         return oldColor;
     }
@@ -364,7 +350,6 @@ public class HexGrid {
 		int highlightColor = 0xFFFFFF; // #FFFFFF;
 
 		Point p = hTile.getCenterPixels();
-
 		//Shape shape = new Ellipse2D.Double((int)p.getX() - 25, (int)p.getY() - 25, 50, 50);
 
 		// g2.setColor(Color.WHITE);
@@ -405,10 +390,11 @@ public class HexGrid {
 
 
 	/**
-	 * sets the background to imgName. The img is resized to fit in the grids
-	 * dimensions. setColor() is disabled
-	 * 
-	 * @param imgName
+	 * sets the background to imgName.
+	 * The img is resized to fit in the grids
+	 * dimensions.
+	 * setColor() is disabled
+	 * * @param imgName
 	 */
 	public void setBackground(PImage bgImage) {
 		// this.xOffset = 0;
@@ -462,7 +448,7 @@ public class HexGrid {
 	public void setTileOutlineColor(final HexLocation loc, final int color) {
 		if (!isValid(loc))
 			throw new RuntimeException("cannot set outline for invalid location " + loc);
-            map[loc.getXCoord()][loc.getYCoord()].setOutlineColor(color);
+		map[loc.getXCoord()][loc.getYCoord()].setOutlineColor(color);
 		//repaint();
 	}
 
@@ -528,14 +514,12 @@ public class HexGrid {
 
 	// 	Point p = e.getPoint();
 	// 	//System.out.println(p);
-		
 	// 	for(HexLocation loc : this.allHexLocations){
 	// 		HexTile hTile = map[loc.getXCoord()][loc.getYCoord()];
 	// 		Polygon hexPoly = hTile.getHexPoly();
 	// 		if(hexPoly.contains(p)){
 				
 	// 			lastLocationClicked = loc;
-				
 	// 		}
 	// 	}
 	// }
@@ -561,7 +545,8 @@ public class HexGrid {
     //     frame.pack();
     //     frame.setVisible(true);
 
-	// 	setBackground(defaultBgColor); //TODO add background
+	// 	setBackground(defaultBgColor);
+	// //TODO add background
 
 	// 	boardHeight = getHeight();
 	// 	hexagonSide = 250 / (hexGen + 2);
@@ -571,7 +556,6 @@ public class HexGrid {
 	// 	System.out.println("Boardheight: " + boardHeight);
 	// 	System.out.println("HexagonSide: " + hexagonSide);
 	// 	System.out.println("WidthMargin: " + widthMargin);
-
 	// 	this.addComponentListener(new ComponentListener() {
 
     // 		public void componentResized(ComponentEvent e) {
@@ -586,29 +570,29 @@ public class HexGrid {
 
     // 		public void componentHidden(ComponentEvent e) {}
 
-    // 		public void componentMoved(ComponentEvent e) {}
+    // 		public void componentMoved(ComponentEvent e) 
+	// {}
 
     // 		public void componentShown(ComponentEvent e) {}
     // 	});
-
-    // }
+	// }
 
     // private void load(String imageFileName) {
     //     showFullImage(loadImage(imageFileName));
-    //     setTitle(imageFileName);
+	//     setTitle(imageFileName);
     // }
 
     // private void save(String imageFileName) {
     //     try {
     //         BufferedImage bi = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-    //         paintComponent(bi.getGraphics());
-    //         int index = imageFileName.lastIndexOf('.');
-    //         if (index == -1)
+	//         paintComponent(bi.getGraphics());
+	//         int index = imageFileName.lastIndexOf('.');
+	//         if (index == -1)
     //             throw new RuntimeException("invalid image file name:  " + imageFileName);
-    //         ImageIO.write(bi, imageFileName.substring(index + 1), new File(imageFileName));
-    //     } catch ( IOException e) {
+	//         ImageIO.write(bi, imageFileName.substring(index + 1), new File(imageFileName));
+	//     } catch ( IOException e) {
     //         throw new RuntimeException("unable to save image to file:  " + imageFileName);
-    //     }
+	//     }
     // }
 
 	// private BufferedImage loadImage(String imageFileName) {
@@ -634,18 +618,16 @@ public class HexGrid {
     //     for (int row = 0; row < getNumRows(); row++) {
     //         for (int col = 0; col < getNumCols(); col++) {
     //             int x = col * image.getWidth() / getNumCols();
-    //             int y = row * image.getHeight() / getNumRows();
-    //             int c = image.getRGB(x, y);
-
-    //             int red = (c & 0x00ff0000) >> 16;
-    //             int green = (c & 0x0000ff00) >> 8;
-    //             int blue = c & 0x000000ff;
-
-    //             map[row][col].setColor(new Color(red, green, blue));
-    //         }
+	//             int y = row * image.getHeight() / getNumRows();
+	//             int c = image.getRGB(x, y);
+	//             int red = (c & 0x00ff0000) >> 16;
+	//             int green = (c & 0x0000ff00) >> 8;
+	//             int blue = c & 0x000000ff;
+	//             map[row][col].setColor(new Color(red, green, blue));
+	//         }
     //     }
     //     repaint();
-    // }
+	// }
 
   
 
@@ -694,7 +676,6 @@ public class HexGrid {
 		Point centerPixels = hTile.getCenterPixels();
 		int xCenter = (int) centerPixels.getX();
 		int yCenter = (int) centerPixels.getY();
-
 		PGraphics pg = new PGraphics();
 
 		// Polygon output = new Polygon();
@@ -708,4 +689,4 @@ public class HexGrid {
 		return pg;
 	}
 
-}  // end of HexGrid class
+}

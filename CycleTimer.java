@@ -1,10 +1,9 @@
-import processing.core.PApplet;
-
-/**
- * CycleTimer Class - Used for create repeating timers
- * @author Joel A Bianchi
- * @version 5/20/25
+/* CycleTimer Class - Used for create repeating timers
+ * Author: Joel Bianchi
+ * Last Edit: 5/20/25
  */
+
+import processing.core.PApplet;
 public class CycleTimer {
 
     PApplet p;
@@ -69,4 +68,5 @@ public class CycleTimer {
             + "\tfreqMs" + frequencyMs;
     }
 
-} // end of CycleTimer class
+
+}

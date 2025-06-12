@@ -1,11 +1,12 @@
-import processing.core.PApplet;
-
-/**
- * PColor class - provides static variables and methods for Processing colors
- * @author Joel A Bianchi
- * @version 5/20/25
+/* PColor class - provides static variables and 
+ methods for Processing colors
+ * Author: Joel Bianchi
+ * Last Edit: 5/20/25
  * Added equals method & NULL
  */
+
+import processing.core.PApplet;
+
 public class PColor {
 
     //------------------ COLOR CONSTANTS--------------------//
@@ -29,7 +30,6 @@ public class PColor {
     // Returns a processing color int when provided a hex color code that starts with a hashtag (ie. #00FF77 )
     public static int get(String hexString){
         int hashIndex = hexString.indexOf("#");
-
         int red = Integer.parseInt(hexString.substring(hashIndex+1, hashIndex+3), 16);
         int green = Integer.parseInt(hexString.substring(hashIndex+3, hashIndex+5), 16);
         int blue = Integer.parseInt(hexString.substring(hashIndex+5, hashIndex+7), 16);
@@ -72,4 +72,5 @@ public class PColor {
             && getBlue(p, firstColor) == getBlue(p, secondColor);
     }
 
-} // end of PColor class
+
+}

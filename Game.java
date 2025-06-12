@@ -15,23 +15,23 @@ public class Game extends PApplet{
 
   // VARIABLES: Processing variable to do Processing things
   PApplet p;
-
   // VARIABLES: Title Bar
   String titleText = "SuperCoolJumpManAdventure";
   String extraText = "CurrentLevel?";
   String name = "Undefined";
-
   // VARIABLES: Whole Game
   AnimatedSprite runningHorse;
   boolean doAnimation;
   AnimatedSprite jumpMan;
-    float gravity = 0.8f;
-      int health = 3;
-        boolean isJumping = false;
-  int jumpTimer = 0;
-  final int maxJumpFrames = 8;
-    long gravityTimer = 0;               // tracks last gravity update
-  int gravityInterval = 400;          // milliseconds between falls (lower = faster)
+  float gravity = 0.8f;
+  int health = 3;
+  // VARIABLES for jumpMan's physics state
+  float jumpManVelocityX = 0; // Horizontal velocity for jumpMan
+  float jumpManVelocityY = 0;
+  boolean jumpManOnGround = false;
+  float jumpStrength = -15.0f;
+  long gravityTimer = 0;
+  int gravityInterval = 400;
 
 
   // VARIABLES: splashScreen
@@ -47,64 +47,54 @@ public class Game extends PApplet{
   PImage world1Bg;
   String enemyFile = "images/zapdos.png";
   Sprite enemy; //Use Sprite for a pixel-based Location
-  float velocityY = 0;
-  float jumpStrength = -15.0f;
-  boolean onGround = false;
+  float velocityY = 0; // Velocity for the original enemy sprite
+  boolean onGround = false; // onGround state for the original enemy sprite
   float groundY = 500;
   int enemystartX = 50;
   int enemystartY = 300;
-  Coordinate[] spawnPoints = { 
-    new Coordinate(100,100), 
-    new Coordinate(200,200) 
+  Coordinate[] spawnPoints = {
+    new Coordinate(100,100),
+    new Coordinate(200,200)
   };
-  
-
   //VARIABLES: world2World Pixel-based Platformer
   World world2;
   String world2BgFile = "images/sky.png";
   PImage world2Bg;
   Platform plat;
-  
-  int testUpdate = 0;
 
+  int testUpdate = 0;
   // VARIABLES: endScreen
   World endScreen;
   PImage endBg;
   String endBgFile = "images/youwin.png";
-
-
   // VARIABLES: Tracking the current Screen being displayed
   Screen currentScreen;
   CycleTimer slowCycleTimer;
   boolean start = true;
-
-
   //------------------ REQUIRED PROCESSING METHODS --------------------//
 
   // Processing method that runs once for screen resolution settings
   public void settings() {
     //SETUP: Match the screen size to the background image size
-    size(800,600);  //these will automatically be saved as width & height
+    size(800,600);
+    //these will automatically be saved as width & height
 
     // Allows p variable to be used by other classes to access PApplet methods
     p = this;
-    
   }
 
   //Required Processing method that gets run once
   public void setup() {
 
-    p.imageMode(p.CORNER);    //Set Images to read coordinates at corners
-    //fullScreen();   //only use if not using a specfic bg image
-    
+    p.imageMode(p.CORNER);
+    //Set Images to read coordinates at corners
+    //fullScreen();
     //SETUP: Set the title on the title bar
     surface.setTitle(titleText);
-
     //SETUP: Load BG images used in all screens
     splashBg = p.loadImage(splashBgFile);
     world1Bg = p.loadImage(world1BgFile);
     endBg = p.loadImage(endBgFile);
-
     //SETUP: If non-moving, Resize all BG images to exactly match the screen size
     splashBg.resize(p.width, p.height);
     world1Bg.resize(p.width, p.height);
@@ -118,21 +108,24 @@ public class Game extends PApplet{
 
     //SETUP: Construct Game objects used in All Screens
     runningHorse = new AnimatedSprite(p, "sprites/horse_run.png", "sprites/horse_run.json", 50.0f, 75.0f, 1.0f);
-
     //SETUP: World 1
-    jumpMan = new AnimatedSprite(p, "sprites/chick_walk.png", "sprites/chick_walk.json", 0.0f, 0.0f, 0.5f);
+    // Initialize jumpMan with animation speed 0, so it doesn't animate when idle.
+    jumpMan = new AnimatedSprite(p, "sprites/chick_walk.png", "sprites/chick_walk.json", 0.0f, 0.0f, 0.0f);
+    jumpMan.moveTo(100, groundY - jumpMan.getH());
+    // Set initial position
+    
     enemy = new Sprite(p, enemyFile, 0.25f);
     enemy.moveTo(enemystartX, enemystartY);
     world1.addSprite(enemy);
     plat = new Platform(p, PColor.MAGENTA, 500.0f, 100.0f, 200.0f, 20.0f);
     plat.setOutlineColor(PColor.BLACK);
-    plat.startGravity(5.0f); //sets gravity to a rate of 5.0
-    world1.addSprite(plat);    
+    plat.startGravity(5.0f);
+    world1.addSprite(plat);
     world1.addSprite(new Platform(p, PColor.GREEN, 100, 400, 150, 20));
     world1.addSprite(new Platform(p, PColor.BLUE, 300, 300, 200, 20));
     world1.addSprite(new Platform(p, PColor.RED, 600, 350, 180, 20));
     world1.addSprite(jumpMan);
-    world1.addSpriteCopyTo(runningHorse, 100, 200);  //example Sprite added to a World at a location, with a speed
+    world1.addSpriteCopyTo(runningHorse, 100, 200);
     world1.printWorldSprites();
     System.out.println("Done loading World 1 ...");
 
@@ -143,12 +136,10 @@ public class Game extends PApplet{
 
 
     System.out.println("Done loading World 2 ...");
-
-
     //SETUP: Sound
     // Load a soundfile from the sounds folder of the sketch and play it back
      //song = new SoundFile(p, "sounds/Lenny_Kravitz_Fly_Away.mp3");
-     //song.play();
+    //song.play();
     
     System.out.println("Game started...");
 
@@ -165,96 +156,73 @@ public class Game extends PApplet{
     updateTitleBar();
     updateScreen();
 
-    // Gravity for Level 1 (time-based)
-    // if (currentScreen == grid0) {
-    //     int maxRow = grid0.getNumRows() - 1;
-    //     GridLocation belowLoc = new GridLocation(player2Row + 1, player2Col);
+    // Physics and Collision Detection for World 1
+    if (currentScreen == world1) {
+        
+        // --- JUMPMAN Physics ---
+        jumpMan.move(jumpManVelocityX, 0); // Apply horizontal velocity
+        jumpManVelocityY += gravity;
+        jumpMan.move(0, jumpManVelocityY);
+        jumpManOnGround = false; // Assume in the air unless a collision is found
 
-    //     // Only fall if player is above bottom row and the tile below is empty
-    //     if (player2Row < maxRow && !grid0.hasTileSprite(belowLoc)) {
-    //         long currentTime = p.millis();
-    //         if (currentTime - gravityTimer >= gravityInterval) {
-    //             GridLocation oldLoc = new GridLocation(player2Row, player2Col);
-    //             player2Row++;
-    //             grid0.clearTileSprite(oldLoc);
-    //             grid0.setTileSprite(belowLoc, jumpMan);
-    //             gravityTimer = currentTime;
-    //         }
-    //     }
-    // } // end grid0
-    
-    // Apply gravity to enemy if in world1World
-    if(currentScreen == world1) {
-        velocityY += gravity;
-        enemy.move(0, velocityY);
-
-        // Check if landed
-        if(enemy.getBottom() >= groundY) {
-            enemy.setBottom(groundY);
-            velocityY = 0;
-            onGround = true;
-        } else {
-            onGround = false;
-        }
-    }
-
-
-    if(currentScreen == world1) {
-        velocityY += gravity;
-        if (isJumping) {
-        jumpTimer++;
-        if (jumpTimer > maxJumpFrames) {
-            isJumping = false;
+        // Check for jumpMan collision with the ground
+        if (jumpMan.getBottom() >= groundY) {
+            jumpMan.setBottom(groundY);
+            jumpManVelocityY = 0;
+            jumpManOnGround = true;
         }
 
-        enemy.move(0, velocityY);
-        onGround = false;
-
+        // Check for jumpMan collision with platforms
         for (Sprite s : world1.getSprites()) {
             if (s instanceof Platform) {
-                if (enemy.getBottom() >= s.getTop() &&
-                    enemy.getBottom() <= s.getTop() + 20 &&
-                    enemy.getCenterX() >= s.getLeft() &&
-                    enemy.getCenterX() <= s.getRight()) {
-                    
-                    enemy.setBottom(s.getTop());
-                    velocityY = 0;
-                    onGround = true;
-                    isJumping = false;
-                    jumpTimer = 0;
-
+                // Check if jumpMan is landing on a platform from above
+                if (jumpManVelocityY > 0 &&
+     
+                     jumpMan.getBottom() >= s.getTop() &&
+                    jumpMan.getBottom() <= s.getTop() + jumpManVelocityY &&
+                    jumpMan.getRight() > s.getLeft() &&
+                    jumpMan.getLeft() < s.getRight()) {
+           
+         
+                    jumpMan.setBottom(s.getTop());
+                    jumpManVelocityY = 0;
+                    jumpManOnGround = true;
                 }
             }
         }
+        
+        // --- ENEMY Physics (for the single 'enemy' instance) ---
+        velocityY += gravity;
+        enemy.move(0, velocityY);
+        onGround = false; // Reset enemy ground status
 
-        if(enemy.getBottom() >= groundY) {
+        // Check enemy collision with the ground
+        if (enemy.getBottom() >= groundY) {
             enemy.setBottom(groundY);
             velocityY = 0;
             onGround = true;
         }
-      }
+        // Check enemy collision with platforms
+        for (Sprite s : world1.getSprites()) {
+            if (s instanceof Platform) {
+                if (velocityY > 0 &&
+                    enemy.getBottom() >= s.getTop() &&
+         
+                     enemy.getBottom() <= s.getTop() + 20 &&
+                    enemy.getCenterX() >= s.getLeft() &&
+                    enemy.getCenterX() <= s.getRight()) {
+                    
+                  
+                     enemy.setBottom(s.getTop());
+                    velocityY = 0;
+                    onGround = true;
+                }
+            }
+        }
     }
-
-
-
-    // Set Timers
-    int cycleTime = 1;  //milliseconds
-    int slowCycleTime = 300;   //milliseconds
-    if(slowCycleTimer == null){
-      slowCycleTimer = new CycleTimer(p, slowCycleTime);
-    }
-
-    // DRAW LOOP: Populate & Move Sprites
-    if(slowCycleTimer.isDone()){
-      populateSprites();
-      moveSprites();
-    }
-
-    // DRAW LOOP: Pause Game Cycle
-    currentScreen.pause(cycleTime);   // slows down the game cycles
-
+    
     // Check for end of game
-    if(isGameOver() ){
+    if(isGameOver()){
       endGame();
     }
 
@@ -263,134 +231,80 @@ public class Game extends PApplet{
 
 
   public void populateSprites() {
-
-    if (currentScreen == world1) {
-
-      for (Coordinate c: spawnPoints) {
-
-        world1.addSpriteCopyTo(enemy, 5.0f, 150.0f);
-        // GridLocation loc = new GridLocation(row, lastCol);
-
-        // double spawnChance = Math.random() * 0.2;
-        //     if (Math.random() < spawnChance && !grid0.hasTileImage(loc)) {
-        //   grid0.setTileImage(loc, enemyImg);
-        // }
-      }
-    }
+      // This method is no longer called from draw to prevent infinite spawning.
+      // Spawning should be handled in setup() or based on specific game events.
   }
 
   public void moveSprites() {
-
-    if (currentScreen == world1) {
-
-      // for (int row = 0; row < grid0.getNumRows(); row++) {
-      //   for (int col = 0; col < grid0.getNumCols(); col++) {
-      //     GridLocation loc = new GridLocation(row, col);
-      //     if (grid0.hasTileImage(loc)) {
-
-      //       // Skip player tile
-      //       if (loc.getRow() == player2Row && loc.getCol() == player2Col) continue;
-
-      //       int newCol = col - 1;   //moves enemies to the left
-      //       if (newCol >= 0) {
-      //         GridLocation newLoc = new GridLocation(row, newCol);
-
-      //         if (loc.getRow() == player2Row && newCol == player2Col) {
-      //           System.out.println("Enemy collided with player!");
-      //           grid0.clearTileImage(loc);
-      //           health--; // optional: track player health
-      //         } else if (!grid0.hasTileImage(newLoc)) {
-      //           grid0.setTileImage(newLoc, grid0.getTileImage(loc));
-      //           grid0.clearTileImage(loc);
-      //         }
-      //       } else {
-      //         // enemy left the screen
-      //         grid0.clearTileImage(loc);
-      //       }
-      //     }
-      //   }
-      // }
-    }   // close world1 moving
-
-
-
-
+      // This method is empty and no longer called.
   }
 
 
   //------------------ USER INPUT METHODS --------------------//
 
-
   //Known Processing method that automatically will run whenever a key is pressed
   public void keyPressed(){
 
     //check what key was pressed
-    System.out.println("\nKey pressed: " + p.keyCode); //key gives you a character for the key pressed
-    
+    System.out.println("\nKey pressed: " + key + " " + p.keyCode);
     //KEYS FOR World1
     if(currentScreen == world1){
 
-      // Move Up
-      if(p.key == 'w' || p.keyCode == UP) {
-          // if(player2Row > 0) player2Row--;
-          jumpMan.move(0,-5);
-      }
-
-      // Move Down
-      if(p.key == 's' || p.keyCode == DOWN) {
-          // if(player2Row < grid0.getNumRows() - 1) player2Row++;
-      }
-
       // Move Left
-      if(p.key == 'a' || p.keyCode == LEFT) {
-          // if(player2Col > 0) player2Col--;
+      if(key == 'a' || p.keyCode == LEFT) {
+          jumpManVelocityX = -5;
+          jumpMan.setAnimationSpeed(0.5f); // Play animation
       }
 
       // Move Right
-      if(p.key == 'd' || p.keyCode == RIGHT) {
-          // if(player2Col < grid0.getNumCols() - 1) player2Col++;
+      if(key == 'd' || p.keyCode == RIGHT) {
+          jumpManVelocityX = 5;
+          jumpMan.setAnimationSpeed(0.5f); // Play animation
       }
-
-      // Update Sprite Position
-
-
+      
+      // Jump
+      if((key == 'w' || p.keyCode == UP) && jumpManOnGround) {
+          jumpManVelocityY = jumpStrength;
+          jumpManOnGround = false;
+      }
     }
 
-    if ((p.key == 'w' || p.keyCode == UP) && onGround) {
-      velocityY = jumpStrength;
-      isJumping = true;
-      jumpTimer = 0;
-      enemy.move(5, 0); // forward boost on jump
-  }
-
-
-
     // if the 'n' key is pressed, ask for their name
-    if(p.key == 'n'){
+    if(key == 'n'){
       name = Input.getString("What is your name?");
     }
 
     //CHANGING SCREENS BASED ON KEYS
-    if(p.key == '1'){
+    if(key == '1'){
       currentScreen = world1;
-    } else if(p.key == '2'){
+    } else if(key == '2'){
       currentScreen = world2;
       plat.moveTo(500.0f, 100.0f);
       plat.setSpeed(0,0);
     }
-
   }
+  
+  // Added to handle stopping the player's animation
+  public void keyReleased() {
+    if ((key == 'a' || p.keyCode == LEFT) && jumpManVelocityX < 0) {
+        jumpManVelocityX = 0;
+        jumpMan.setAnimationSpeed(0.0f); // Stop animation
+    }
+    if ((key == 'd' || p.keyCode == RIGHT) && jumpManVelocityX > 0) {
+        jumpManVelocityX = 0;
+        jumpMan.setAnimationSpeed(0.0f); // Stop animation
+    }
+  }
+
 
   // Known Processing method that automatically will run when a mouse click triggers it
   public void mouseClicked(){
     
     // Print coordinates of mouse click
     System.out.println("\nMouse was clicked at (" + p.mouseX + "," + p.mouseY + ")");
-
     // Display color of pixel clicked
     int color = p.get(p.mouseX, p.mouseY);
     PColor.printPColor(p, color);
-
     // if the Screen is a Grid, print grid coordinate clicked
     if(currentScreen instanceof Grid){
       System.out.println("Grid location --> " + ((Grid) currentScreen).getGridLocation());
@@ -412,10 +326,8 @@ public class Game extends PApplet{
     if(!isGameOver()) {
 
       extraText = currentScreen.getName();
-
       //set the title each loop
       surface.setTitle(titleText + "    " + extraText + " " + name + ": " + health);
-
       //adjust the extra text as desired
     
     }
@@ -426,13 +338,11 @@ public class Game extends PApplet{
 
     // UPDATE: first lay down the Background
     currentScreen.showBg();
-
     // UPDATE: splashScreen
     if(currentScreen == splashScreen){
 
       // Print an s in console when splashscreen is up
       System.out.print("s");
-
       // Change the screen to level 1 between 3 and 5 seconds
       if(splashScreen.getScreenTime() > 3000 && splashScreen.getScreenTime() < 5000){
         currentScreen = world1;
@@ -445,28 +355,12 @@ public class Game extends PApplet{
 
       // Print a '1' in console when world1
       System.out.print("1");
-
-      // world1.moveBgXY(-0.3f, 0f);  //adjust speeds of moving backgrounds, -3.0f for 100 ms delays
-      // enemy.show();
-
     }
 
     // UPDATE: world2World Screen
     if(currentScreen == world2){
-
-      // Print a '2' in console when world1
+      // Print a '2' in console when world2
       System.out.print("2");
-
-      if((p.key == 'w' || p.keyCode == UP) && onGround){
-    velocityY = jumpStrength;
-    onGround = false;
-}
-
-
-      // Print a '3 in console when world2
-      System.out.print("2");
-
-
     }
 
     // UPDATE: End Screen
@@ -474,10 +368,8 @@ public class Game extends PApplet{
 
     // }
 
-
     // UPDATE: Other built-in to current World/Grid/HexGrid
     currentScreen.show();
-
   }
 
 
@@ -504,24 +396,23 @@ public class Game extends PApplet{
 
     //check if a player collides into enemy
 
-    return false; //<--default return
+    return false;
   }
 
   // Indicates when the main game is over
   public boolean isGameOver(){
     
-    return false; //by default, the game is never over
+    return false;
+    //by default, the game is never over
   }
 
   // Describes what happens after the game is over
   public void endGame(){
       System.out.println("Game Over!");
-
       // Update the title bar
 
       // Show any end imagery
       currentScreen = endScreen;
-
   }
 
 

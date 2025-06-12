@@ -1,19 +1,19 @@
-import javax.swing.*;
-
-/**
- * Input class - to have popup boxes for users to type data
+/* Input class - to have popup boxes for users to type data
  * Modified from North Toronto Collegiate Institute, Gerry Heffernan: https://ntci.on.ca/compsci/hef/ics3/ch1/1_4.html
- * @author Joel A Bianchi
- * @version 5/13/25
+ * Authors: Joel Bianchi
+ * Last Edit: 5/13/25
  * Renamed prompt --> question
  */
+
+
+import javax.swing.*;
 public class Input{
 
     /**
 	 * Generates a pop-up question on the Screen
 	 * @param questionText String prompt for the user
-	 * 						(Hint: Use new line escape characters (\n) in your String
-	 * 						if it is too long to fit neatly into the box.)
+	 * (Hint: Use new line escape characters (\n) in your String
+	 * if it is too long to fit neatly into the box.)
 	 * @return a String with the Adventurer's answer 
 	 */     
     public static String question(String questionText) {
@@ -58,12 +58,12 @@ public class Input{
     // /**
 	//  * Generates a pop-up message that can be closed
 	//  * @param questionText String prompt for the user
-	//  * 						(Hint: Use new line escape characters (\n) in your String
-	//  * 						if it is too long to fit neatly into the box.
+	//  * (Hint: Use new line escape characters (\n) in your String
+	//  * if it is too long to fit neatly into the box.
 	//  */
 	// public void message(String messageText){
     //     System.out.println(messageText);
 	// 	JOptionPane.showMessageDialog(null, messageText, "Important message!", JOptionPane.PLAIN_MESSAGE);
 	// }
 
-} // end of Input class
+}
