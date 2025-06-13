@@ -1,14 +1,14 @@
-/**
- * Game Class - Primary game logic for a Java-based Processing Game
- * @author Sayeedus Salihin
- * @author Joel A Bianchi
- * @version 6/12/25
- * No need to create PImage for bg
+/* Game Class Starter File
+ * Authors: Sayeedus Salihin, Joel A. Bianchi
+ * Last Edit: 6/12/25
+ * using new Screen show method
+ * * MODIFIED TO INCLUDE:
+ * - Player respawn on falling
+ * - Jetpack item for teleporting to a new world
  */
 
 //import processing.sound.*;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PImage;
 
 
@@ -39,6 +39,7 @@ public class Game extends PApplet{
 
   // VARIABLES: splashScreen
   Screen splashScreen;
+  PImage splashBg;
   String splashBgFile = "images/apcsa.png";
   //SoundFile song;
 
@@ -64,9 +65,15 @@ public class Game extends PApplet{
   PImage world2Bg;
   Platform plat;
 
+  // --- NEW FEATURE: JETPACK AND STARTING PLATFORM VARIABLES ---
+  Sprite jetpack; // Jetpack sprite that teleports the player
+  String jetpackFile = "images/jetpack.png"; // <-- NEW IMAGE FILE NEEDED
+  Platform startPlatform; // A reference to the starting platform for respawning
+
   int testUpdate = 0;
   // VARIABLES: endScreen
   World endScreen;
+  PImage endBg;
   String endBgFile = "images/youwin.png";
   // VARIABLES: Tracking the current Screen being displayed
   Screen currentScreen;
@@ -87,14 +94,24 @@ public class Game extends PApplet{
   //Required Processing method that gets run once
   public void setup() {
 
+    p.imageMode(p.CORNER);
+    //Set Images to read coordinates at corners
+    //fullScreen();
     //SETUP: Set the title on the title bar
     surface.setTitle(titleText);
-    p.imageMode(PConstants.CORNER);    //Set Images to read coordinates at corners
+    //SETUP: Load BG images used in all screens
+    splashBg = p.loadImage(splashBgFile);
+    world1Bg = p.loadImage(world1BgFile);
+    endBg = p.loadImage(endBgFile);
+    //SETUP: If non-moving, Resize all BG images to exactly match the screen size
+    splashBg.resize(p.width, p.height);
+    world1Bg.resize(p.width, p.height);
+    endBg.resize(p.width, p.height);
 
     //SETUP: Screens, Worlds, Grids
-    splashScreen = new Screen(this, "splash", splashBgFile);
+    splashScreen = new Screen(this, "splash", splashBg);
     world1 = new World(p, "sky", world1BgFile, 1.0f, 0.0f, 0.0f); //moveable World constructor --> defines center & scale (x, scale, y)???
-    endScreen = new World(p, "end", endBgFile);
+    endScreen = new World(p, "end", endBg);
     currentScreen = splashScreen;
 
     //SETUP: Construct Game objects used in All Screens
@@ -112,18 +129,37 @@ public class Game extends PApplet{
     plat.setOutlineColor(PColor.BLACK);
     plat.startGravity(5.0f);
     world1.addSprite(plat);
-    world1.addSprite(new Platform(p, PColor.GREEN, 100, 400, 150, 20));
+
+    // --- MODIFIED PLATFORM SETUP ---
+    // Store the green platform in a variable for easy access to its position for respawning
+    startPlatform = new Platform(p, PColor.GREEN, 100, 400, 150, 20);
+    world1.addSprite(startPlatform);
     world1.addSprite(new Platform(p, PColor.BLUE, 300, 300, 200, 20));
-    world1.addSprite(new Platform(p, PColor.RED, 600, 350, 180, 20));
+    // Store red platform to place jetpack on it
+    Platform redPlatform = new Platform(p, PColor.RED, 600, 350, 180, 20);
+    world1.addSprite(redPlatform);
+    
+    // --- NEW FEATURE: SETUP THE JETPACK ---
+    jetpack = new Sprite(p, jetpackFile, 0.2f); // Load the jetpack image
+    // Position the jetpack on top of the center of the red platform
+    jetpack.moveTo(redPlatform.getCenterX(), redPlatform.getTop() - jetpack.getH());
+    world1.addSprite(jetpack); // Add the jetpack to the world
+    
     world1.addSprite(jumpMan);
     world1.addSpriteCopyTo(runningHorse, 100, 200);
     world1.printWorldSprites();
     System.out.println("Done loading World 1 ...");
 
-    // SETUP: World 2
+    // --- MODIFIED: SETUP WORLD 2 ---
     world2Bg = loadImage(world2BgFile);
     world2Bg.resize(p.width, p.height);
-    world2 = new World(p,"platformer", world2BgFile);
+    world2 = new World(p,"platformer", world2Bg);
+    // Add jumpMan to world2 so the player exists and is visible after teleporting
+    world2.addSprite(jumpMan); 
+    // Add some platforms to the new world to make it different
+    world2.addSprite(new Platform(p, PColor.YELLOW, 100, 500, 150, 20));
+    world2.addSprite(new Platform(p, PColor.CYAN, 350, 400, 150, 20));
+    world2.addSprite(new Platform(p, PColor.MAGENTA, 600, 300, 150, 20));
 
 
     System.out.println("Done loading World 2 ...");
@@ -182,6 +218,30 @@ public class Game extends PApplet{
             }
         }
         
+        // --- NEW FEATURE: TELEPORT ON FALL ---
+        // Check if player has fallen off the bottom of the screen
+        if (jumpMan.getTop() > height) { // `height` is a processing variable for screen height
+            // Teleport jumpMan back to the top of the starting green platform
+            jumpMan.moveTo(startPlatform.getCenterX(), startPlatform.getTop() - jumpMan.getH());
+            jumpManVelocityY = 0; // Reset vertical velocity to prevent immediate falling again
+            System.out.println("Player fell! Respawning...");
+        }
+
+        // --- NEW FEATURE: JETPACK TELEPORT ---
+        // Check for collision with the jetpack
+        if (jumpMan.isOverlapping(jetpack) && jetpack.isSolid()) {
+            System.out.println("Jetpack acquired! Teleporting...");
+            // Change to the new world
+            currentScreen = world2;
+            // Reset jumpMan's position and velocity for the new world
+            jumpMan.moveTo(100, 400); // Set a starting position in world2
+            jumpManVelocityX = 0;
+            jumpManVelocityY = 0;
+            // Optional: make the jetpack disappear or become non-interactive
+            jetpack.setSolid(false); // Make jetpack non-solid so it doesn't re-trigger
+            jetpack.moveTo(-200, -200); // Move the jetpack off-screen so it's not visible
+        }
+
         // --- ENEMY Physics (for the single 'enemy' instance) ---
         velocityY += gravity;
         enemy.move(0, velocityY);
@@ -239,7 +299,7 @@ public class Game extends PApplet{
     //check what key was pressed
     System.out.println("\nKey pressed: " + key + " " + p.keyCode);
     //KEYS FOR World1
-    if(currentScreen == world1){
+    if(currentScreen == world1 || currentScreen == world2){ // Allow movement in both worlds
 
       // Move Left
       if(key == 'a' || p.keyCode == LEFT) {
