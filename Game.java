@@ -1,11 +1,14 @@
-/* Game Class Starter File
- * Authors: Sayeedus Salihin, Joel A. Bianchi
- * Last Edit: 6/12/25
- * using new Screen show method
+/**
+ * Game Class - Primary game logic for a Java-based Processing Game
+ * @author Sayeedus Salihin
+ * @author Joel A Bianchi
+ * @version 6/12/25
+ * No need to create PImage for bg
  */
 
 //import processing.sound.*;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 
 
@@ -36,7 +39,6 @@ public class Game extends PApplet{
 
   // VARIABLES: splashScreen
   Screen splashScreen;
-  PImage splashBg;
   String splashBgFile = "images/apcsa.png";
   //SoundFile song;
 
@@ -65,7 +67,6 @@ public class Game extends PApplet{
   int testUpdate = 0;
   // VARIABLES: endScreen
   World endScreen;
-  PImage endBg;
   String endBgFile = "images/youwin.png";
   // VARIABLES: Tracking the current Screen being displayed
   Screen currentScreen;
@@ -86,24 +87,14 @@ public class Game extends PApplet{
   //Required Processing method that gets run once
   public void setup() {
 
-    p.imageMode(p.CORNER);
-    //Set Images to read coordinates at corners
-    //fullScreen();
     //SETUP: Set the title on the title bar
     surface.setTitle(titleText);
-    //SETUP: Load BG images used in all screens
-    splashBg = p.loadImage(splashBgFile);
-    world1Bg = p.loadImage(world1BgFile);
-    endBg = p.loadImage(endBgFile);
-    //SETUP: If non-moving, Resize all BG images to exactly match the screen size
-    splashBg.resize(p.width, p.height);
-    world1Bg.resize(p.width, p.height);
-    endBg.resize(p.width, p.height);
+    p.imageMode(PConstants.CORNER);    //Set Images to read coordinates at corners
 
     //SETUP: Screens, Worlds, Grids
-    splashScreen = new Screen(this, "splash", splashBg);
+    splashScreen = new Screen(this, "splash", splashBgFile);
     world1 = new World(p, "sky", world1BgFile, 1.0f, 0.0f, 0.0f); //moveable World constructor --> defines center & scale (x, scale, y)???
-    endScreen = new World(p, "end", endBg);
+    endScreen = new World(p, "end", endBgFile);
     currentScreen = splashScreen;
 
     //SETUP: Construct Game objects used in All Screens
@@ -132,7 +123,7 @@ public class Game extends PApplet{
     // SETUP: World 2
     world2Bg = loadImage(world2BgFile);
     world2Bg.resize(p.width, p.height);
-    world2 = new World(p,"platformer", world2Bg);
+    world2 = new World(p,"platformer", world2BgFile);
 
 
     System.out.println("Done loading World 2 ...");

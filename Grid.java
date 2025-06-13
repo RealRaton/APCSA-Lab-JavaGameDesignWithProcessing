@@ -1,15 +1,16 @@
-/* Grid Class - Used for rectangular-tiled games
- * A 2D array of GridTiles which can be marked
- * Subclass of World that can show all Images & Sprites
- * Author: Joel Bianchi & RJ Morel
- * Last Edit: 5/20/25
- * Added show method to Grid
- */
-
-
 import processing.core.PApplet;
 import processing.core.PImage;
 
+/**
+ *  Grid Class - Used for rectangular-tiled games
+ * A 2D array of GridTiles which can be marked
+ * Subclass of World that can show all Images & Sprites
+ * @author Joel A Bianchi
+ * @author RJ Morel
+ * @version 6/12/25
+ * All Grids take in files, create & resize background PImages
+ * Added copyTileSprite() & moveTileSprite() to help with populating & moving Sprites through the Grid
+ */
 public class Grid extends World{
   
   //------------------ GRID FIELDS --------------------//
@@ -19,9 +20,48 @@ public class Grid extends World{
   private boolean printingGridMarks = false;
   //------------------ GRID CONSTRUCTORS --------------------//
 
-  //Grid constructor #1
-  public Grid(PApplet p, String screenName, PImage bg, int rows, int cols){
-    super(p, screenName, bg);
+  /**
+   * Grid Constructor #1: Default constructor that creates a 3x3 Grid  
+   * @param p             Processing applet
+   */
+  public Grid(PApplet p){
+     this(p, 3,3);
+  }
+
+  /**
+   * Grid Construtor #2: Only accepts the number of rows & columns (Default for 2023)
+   * @param p             Processing applet
+   * @param rows          number of rows in the grid
+   * @param cols          number of columns in the grid
+   */
+  public Grid(PApplet p, int rows, int cols){
+    this(p, "grid",null, rows, cols);
+  }
+
+  /**
+   * Grid constructor #3: Sets background image + rows & cols
+   * @param p             Processing applet
+   * @param screenName    String to track Screens
+   * @param bgFile        filename for stationary background image
+   * @param rows          number of rows in the grid
+   * @param cols          number of columns in the grid
+   */
+  public Grid(PApplet p, String screenName, String bgFile, int rows, int cols){
+    this(p, screenName, bgFile, null, rows, cols);
+  }
+
+  /**
+   * Grid constructor #4: Takeas in 2D String array parameter to set tile marks
+   * @param p             Processing applet
+   * @param screenName    String to track Screens
+   * @param bgFile        filename for stationary background image
+   * @param tileMarks     a 2D array of String marks to setup entire Grid
+   * @param rows          number of rows in the grid
+   * @param cols          number of columns in the grid
+   */
+  public Grid(PApplet p, String screenName, String bgFile, String[][] tileMarks, int rows, int cols){
+    super(p, screenName, bgFile);
+
     this.rows = rows;
     this.cols = cols;
     board = new GridTile[rows][cols];
@@ -31,17 +71,7 @@ public class Grid extends World{
       }
     }
   }
-
-  //Grid Construtor #2: Only accepts the number of rows & columns (Default for 2023)
-  public Grid(PApplet p, int rows, int cols){
-    this(p, "grid",null, rows, cols);
-  }
-
-  // Grid Constructor #3: Default constructor that creates a 3x3 Grid  
-  public Grid(PApplet p){
-     this(p, 3,3);
-  }
-
+  
 
   //------------------ GRID MARKING METHODS --------------------//
  
@@ -263,14 +293,43 @@ public class Grid extends World{
     //System.out.println("Grid.getTileSprite() " + tile.getSprite());
     return tile.getSprite();
   }
+
+  /** 
+   * Sets a copy of a Sprite at a particular tile in the grid & displays it
+   * @param loc         GridLocation to add copied Sprite to
+   * @param sprite      Sprite to make a copy of and add to tile
+   */
+  public void copyTileSprite(GridLocation loc, Sprite sprite){
+    Sprite copySprite = sprite.copy();
+    setTileSprite(loc, copySprite);
+  }
+
+   /** 
+   * Moves the Sprite at a particular tile in the grid to a new location
+   * @param oldLoc      original GridLocation of the Sprite
+   * @param newLoc      new GridLocation of the Sprite
+   */
+  public void moveTileSprite(GridLocation oldLoc, GridLocation newLoc){
+    Sprite currentSprite = getTileSprite(oldLoc);
+    clearTileSprite(oldLoc);
+    setTileSprite(newLoc, currentSprite);
+  }
   
-  //Method that returns if a Tile has a PImage
+  /** 
+   * Checks if a Tile has a PImage
+   * @param loc         GridLocation for a specific GridTile
+   * @return boolean      <code>true</code> if the GridTile has a stored image, <code>false</code> otherwise
+   */  
   public boolean hasTileSprite(GridLocation loc){
     GridTile tile = getTile(loc);
     return tile.hasSprite();
   }
 
-  //Method that clears the tile image
+  /**
+   * Clears the Sprite from a particular tile
+   * If trying to move the Sprite, you caan also use moveTileSprite() instead
+   * @param loc         GridLocation for a specific GridTile
+   */
   public void clearTileSprite(GridLocation loc){
     setTileSprite(loc,null);
   }

@@ -6,11 +6,9 @@ import processing.core.PImage;
  * Note: Picture coordinate origina at top, left corner
  * @author Joel A Bianchi
  * @author Marcus Bistline
- * @version 5/29/25
- * updated formatting for javadoc
- * Added isOverlapping() method
- * Added isTouchingTop(), isTouchingBottom(), isTouchingRight(), and isTouchingLeft() methods
- * Added isSolid property to Sprites
+ * @version 6/12/25
+ * resize() updated for pixels (float)
+ * scale() added
  */
 public class Sprite{
 
@@ -85,9 +83,7 @@ public class Sprite{
     if(!isAnimated){
       if( spriteImgFile != null){
         this.spriteImg = p.loadImage(spriteImgFile);
-        w = spriteImg.width * scale;
-        h = spriteImg.height * scale;
-        // System.out.println("Sprite 64: " + spriteImg);
+        scale(scale);
       } else {
 
       }
@@ -119,6 +115,7 @@ public class Sprite{
     this.h = spriteImg.height * scale;
     setLeft(x);
     setTop(y);
+    resize(w,h);
     this.speedX = 0;
     this.speedY = 0;
     this.isAnimated = false;
@@ -674,8 +671,21 @@ public class Sprite{
    * @param width           how many pixels wide the Sprite will change to
    * @param height          how many pixels high the Sprite will change to
    */
-  public void resize(int width, int height){
-    spriteImg.resize(width, height);
+  public void resize(float width, float height){
+    this.w = width;
+    this.h = height;
+    System.out.println("Resizing Sprite to " + width + "x" +  height);
+    spriteImg.resize( (int) width, (int) height);
+  }
+
+  /** 
+   * Scales Sprite to be bigger (with values > 1.0f)
+   * and smaller (with values < 1.0f)
+   * @param scale       number to multiple height & width of image by
+   */
+  public void scale(float scale){
+    w = spriteImg.width * scale;
+    h = spriteImg.height * scale;
   }
   
   /** * Checks if this Sprite is same as otherSprite (based on name or image)

@@ -10,8 +10,8 @@ import java.util.ArrayList;
  * @author Joel Bianchi
  * @author Aiden Sing
  * @author Tahlei Richardson
- * @version 5/8/25
- * Updated to Java version
+ * @version 6/12/25
+ * Ability to resize animatedSprites
  */
 public class AnimatedSprite extends Sprite{
 
@@ -193,9 +193,12 @@ public class AnimatedSprite extends Sprite{
    * @param h     height of the newly sized AnimatedSprite
    */
   public void resize(int w, int h){
+    super.setH(h);
+    super.setW(w);
     for(int i=0; i<animation.size(); i++){
       PImage pi = animation.get(i);
       pi.resize(w,h);
+      // System.out.println("Resizeing AS with index " + i + "h:" +pi.height + ",w:" + pi.width);
     }
   }
 
